@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-800 pt-3">
+    <!-- Breadcrumb -->
+    <div class="mb-15 d-flex justify-between align-center">
+        <a href="{% url 'booking_details' booking.id %}" class="btn btn-sm btn-dark">
+            <i class="fa-solid fa-arrow-left"></i> Back to Booking Details
+        </a>
+        <a href="{% url 'before_inspection' booking.id %}" class="btn btn-sm btn-outline">
+            <i class="fa-solid fa-arrow-left"></i> View Pre-Trip Inspection
+        </a>
+    </div>
+
+    <div class="card card-glow p-25 border-top-primary-4">
+        <div class="d-flex justify-between align-center border-bottom-dark pb-15 mb-2 flex-wrap gap-1">
+            <div>
+                <span class="badge badge-premium mb-04">Return Audit Phase 2</span>
+                <h1 class="text-white fs-2 fw-extrabold">Vehicle Return Inspection</h1>
+                <p class="text-muted fs-09">Record return odometer, fuel levels, and inspect vehicle for any new damages.</p>
+            </div>
+            <div>
+                {% if inspection.after_completed %}
+                    <span class="badge badge-approved fs-095 p-05-1">
+                        <i class="fa-solid fa-circle-check"></i> Return Inspection Completed
+                    </span>
+                {% else %}
+                    <span class="badge badge-warning fs-095 p-05-1">
+                        <i class="fa-solid fa-clock"></i> Return Inspection Pending
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Pre-Trip Baseline Reference -->
+        <div class="bg-black-30 border-dark rounded-sm p-125 mb-2">
+            <span class="text-primary fs-08 fw-bold text-uppercase tracking-sm">Pre-Trip Baseline Reference</span>
+            <div class="grid grid-3 fs-088 mt-05">
+                <div>
+                    <span class="text-muted d-block">Starting Odometer:</span>
+                    <strong class="text-white">{{ inspection.before_odometer }} KM</strong>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Starting Fuel Tank:</span>
+                    <strong class="text-white">{{ inspection.before_fuel_level }}</strong>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Initial Body Condition:</span>
+                    <strong class="text-white">{{ inspection.before_exterior_condition }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'after_inspection' booking.id %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-gauge text-primary"></i> Return Odometer Reading (KM) *</label>
+                    <input type="number" name="after_odometer" value="{{ inspection.after_odometer|default:inspection.before_odometer }}" required class="form-control" placeholder="12850" min="{{ inspection.before_odometer }}" {% if inspection.after_completed and not user.is_staff %}readonly{% endif %}>
+                    {% if inspection.total_kms_driven %}
+                        <small class="text-success fw-semibold">Total Driven: {{ inspection.total_kms_driven }} KM</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-gas-pump text-primary"></i> Fuel Level on Return *</label>
+                    <select name="after_fuel_level" class="form-select" {% if inspection.after_completed and not user.is_staff %}disabled{% endif %}>
+                        <option value="100% Full" {% if inspection.after_fuel_level == '100% Full' %}selected{% endif %}>100% Full Tank</option>
+                        <option value="75%" {% if inspection.after_fuel_level == '75%' %}selected{% endif %}>75% Tank</option>
+                        <option value="50%" {% if inspection.after_fuel_level == '50%' %}selected{% endif %}>50% Tank</option>
+                        <option value="25%" {% if inspection.after_fuel_level == '25%' %}selected{% endif %}>25% Tank</option>
+                        <option value="Reserve" {% if inspection.after_fuel_level == 'Reserve' %}selected{% endif %}>Reserve (Refuel Penalty)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-car-side text-primary"></i> Return Exterior Condition *</label>
+                    <select name="after_exterior_condition" class="form-select" {% if inspection.after_completed and not user.is_staff %}disabled{% endif %}>
+                        <option value="Pristine / Excellent" {% if inspection.after_exterior_condition == 'Pristine / Excellent' %}selected{% endif %}>Pristine / Excellent (No issues)</option>
+                        <option value="Good / Clean" {% if inspection.after_exterior_condition == 'Good / Clean' %}selected{% endif %}>Good / Clean</option>
+                        <option value="Minor Wear & Tear" {% if inspection.after_exterior_condition == 'Minor Wear & Tear' %}selected{% endif %}>Minor Wear & Tear</option>
+                        <option value="Scratches / Blemishes" {% if inspection.after_exterior_condition == 'Scratches / Blemishes' %}selected{% endif %}>Scratches / Blemishes (Damage)</option>
+                        <option value="Damaged" {% if inspection.after_exterior_condition == 'Damaged' %}selected{% endif %}>Damaged (Report Required)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-triangle-exclamation text-primary"></i> Any New Damages Detected?</label>
+                    <select name="damages_detected" class="form-select {% if inspection.damages_detected %}border-danger{% endif %}" {% if inspection.after_completed and not user.is_staff %}disabled{% endif %}>
+                        <option value="no" {% if not inspection.damages_detected %}selected{% endif %}>No Damages – Vehicle Returned in Perfect Order</option>
+                        <option value="yes" {% if inspection.damages_detected %}selected{% endif %}>Yes – New Damages Identified</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-clipboard text-primary"></i> Return Auditor Notes</label>
+                <textarea name="after_notes" class="form-control" rows="3" placeholder="Condition details, sanitization check, key return confirmation..." {% if inspection.after_completed and not user.is_staff %}readonly{% endif %}>{{ inspection.after_notes }}</textarea>
+            </div>
+
+            {% if not inspection.after_completed or user.is_staff %}
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-1">
+                    <i class="fa-solid fa-flag-checkered"></i> Submit & Complete Return Inspection
+                </button>
+            {% else %}
+                <div class="text-center text-muted fs-09 p-1">
+                    Return inspection completed on {{ inspection.after_inspection_date|date:"F d, Y &bull; h:i A" }}.
+                </div>
+            {% endif %}
+        </form>
+
+        <!-- Damage Reports Section (if any) -->
+        <div class="mt-25 border-top-dark pt-2">
+            <div class="d-flex justify-between align-center mb-125">
+                <h3 class="text-white fs-13 d-flex align-center gap-05">
+                    <i class="fa-solid fa-car-burst text-primary"></i> Damage Incident Log
+                </h3>
+                <a href="{% url 'damage_report' inspection.id %}" class="btn btn-sm btn-outline-red">
+                    <i class="fa-solid fa-plus"></i> File Damage Incident Report
+                </a>
+            </div>
+
+            {% if inspection.damage_reports.exists %}
+                <div class="grid grid-2 gap-1">
+                    {% for report in inspection.damage_reports.all %}
+                        <div class="card p-125 border-left-primary-3">
+                            <div class="d-flex justify-between align-start mb-05">
+                                <strong class="text-white fs-1">{{ report.damage_title }}</strong>
+                                <span class="badge {% if report.payment_status == 'Paid' %}badge-approved{% else %}badge-rejected{% endif %}">
+                                    {{ report.payment_status }}
+                                </span>
+                            </div>
+                            <p class="text-muted fs-085 mb-075">
+                                {{ report.description|truncatewords:12 }}
+                            </p>
+                            <div class="d-flex justify-between align-center">
+                                <span class="fw-extrabold text-primary fs-11">₹{{ report.estimated_cost }}</span>
+                                <a href="{% url 'damage_details' report.id %}" class="btn btn-sm btn-dark">View Details &rarr;</a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="p-15 bg-black-20 rounded-sm text-center text-muted fs-09">
+                    <i class="fa-solid fa-circle-check text-success mr-04"></i>
+                    No damages logged for this rental. Zero damage penalties apply.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

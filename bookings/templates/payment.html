@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-750 pt-3">
+    <!-- Step Header -->
+    <div class="text-center mb-25">
+        <span class="badge badge-premium mb-05">Step 3 of 3</span>
+        <h1 class="fs-24 fw-extrabold text-white">Secure Payment Checkout</h1>
+        <p class="text-muted fs-095">Select your preferred payment channel to finalize your booking.</p>
+    </div>
+
+    <div class="grid grid-2 gap-2 align-start">
+        <!-- Left: Payment Method Form -->
+        <div class="card card-glow p-2 border-top-primary-4">
+            <h3 class="text-white fs-125 mb-15 d-flex align-center gap-05">
+                <i class="fa-solid fa-lock text-primary"></i> Payment Method
+            </h3>
+
+            <form method="post" action="{% url 'payment' booking.id %}" id="paymentForm">
+                {% csrf_token %}
+
+                <!-- Method selection tabs -->
+                <div class="form-group">
+                    <label class="form-label">Choose Payment Option</label>
+                    <select name="payment_method" id="paymentMethodSelect" class="form-select" onchange="togglePaymentInputs()">
+                        <option value="Credit/Debit Card">Credit / Debit Card</option>
+                        <option value="UPI / QR">UPI / QR Code Scan</option>
+                        <option value="Net Banking">Net Banking</option>
+                        <option value="Pay on Pickup">Pay on Vehicle Pickup at Hub</option>
+                    </select>
+                </div>
+
+                <!-- Card Form Fields -->
+                <div id="cardFields">
+                    <div class="form-group">
+                        <label class="form-label">Cardholder Name</label>
+                        <input type="text" name="card_name" value="{{ booking.user.get_full_name|default:booking.user.username }}" class="form-control" placeholder="Aswin Kumar">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Card Number</label>
+                        <input type="text" name="card_number" value="4532 &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 8920" class="form-control" placeholder="4532 0000 0000 0000">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Expiry (MM/YY)</label>
+                            <input type="text" name="card_expiry" value="12/28" class="form-control" placeholder="12/28">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">CVV / CVC</label>
+                            <input type="password" name="card_cvv" value="888" maxlength="4" class="form-control" placeholder="888">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- UPI Fields (hidden by default) -->
+                <div class="d-none text-center p-1 bg-black-30 rounded-sm mb-1" id="upiFields">
+                    <div class="fs-09 text-muted mb-05">Scan QR code with any UPI App (GPay, PhonePe, Paytm):</div>
+                    <div class="w-140px h-140px bg-white rounded-8 m-auto-b075 d-flex align-center justify-center text-black fw-extrabold fs-08 border-primary-4">
+                        <i class="fa-solid fa-qrcode fs-5"></i>
+                    </div>
+                    <code class="text-primary fs-085">drivehub@centralbank</code>
+                </div>
+
+                <!-- Pay on Pickup Note -->
+                <div class="d-none p-1 bg-success-10 border-success-30 rounded-sm mb-1" id="pickupFields">
+                    <span class="text-success-light fs-085"><i class="fa-solid fa-circle-check"></i> You can settle this payment in person when collecting the keys at the DriveHub terminal.</span>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-05">
+                    <i class="fa-solid fa-shield-halved"></i> Pay ₹{{ booking.total_amount }} & Finalize
+                </button>
+            </form>
+
+            <div class="d-flex justify-center gap-1 mt-125 text-dark fs-15">
+                <i class="fa-brands fa-cc-visa"></i>
+                <i class="fa-brands fa-cc-mastercard"></i>
+                <i class="fa-brands fa-cc-amex"></i>
+                <i class="fa-brands fa-apple-pay"></i>
+                <i class="fa-brands fa-google-pay"></i>
+            </div>
+        </div>
+
+        <!-- Right: Order Review Column -->
+        <div class="card p-175">
+            <h4 class="text-white fs-11 mb-125 pb-075 border-bottom-dark">
+                Order Breakdown
+            </h4>
+
+            <div class="mb-1">
+                <span class="text-muted fs-082 d-block">Vehicle:</span>
+                <strong class="text-white fs-1">{{ booking.car.brand }} {{ booking.car.name }}</strong>
+            </div>
+
+            <div class="mb-1">
+                <span class="text-muted fs-082 d-block">Booking Ref:</span>
+                <code>{{ booking.booking_id }}</code>
+            </div>
+
+            <div class="mb-1">
+                <span class="text-muted fs-082 d-block">Duration:</span>
+                <span class="text-white">{{ booking.start_date|date:"M d" }} &rarr; {{ booking.end_date|date:"M d, Y" }} ({{ booking.total_days }} Days)</span>
+            </div>
+
+            <div class="border-top-dark pt-1">
+                <div class="d-flex justify-between fs-09 mb-04 text-muted">
+                    <span>Rental Charge:</span>
+                    <span class="text-white">₹{{ booking.rental_charge }}</span>
+                </div>
+                <div class="d-flex justify-between fs-09 mb-04 text-muted">
+                    <span>Security Deposit (Refundable):</span>
+                    <span class="text-white">₹{{ booking.security_deposit }}</span>
+                </div>
+                <div class="d-flex justify-between fs-11 fw-extrabold text-white mt-075 border-top-dashed pt-075">
+                    <span>Total Amount:</span>
+                    <span class="text-primary fs-135">₹{{ booking.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePaymentInputs() {
+    const method = document.getElementById('paymentMethodSelect').value;
+    const cardFields = document.getElementById('cardFields');
+    const upiFields = document.getElementById('upiFields');
+    const pickupFields = document.getElementById('pickupFields');
+
+    cardFields.style.display = (method === 'Credit/Debit Card' || method === 'Net Banking') ? 'block' : 'none';
+    upiFields.style.display = (method === 'UPI / QR') ? 'block' : 'none';
+    pickupFields.style.display = (method === 'Pay on Pickup') ? 'block' : 'none';
+}
+</script>
+{% endblock %}

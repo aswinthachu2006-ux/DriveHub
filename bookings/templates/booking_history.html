@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container pt-3">
+    <div class="d-flex justify-between align-end mb-25 flex-wrap gap-1">
+        <div>
+            <span class="text-primary fw-bold text-uppercase fs-085 tracking-wide">Reservations Management</span>
+            <h1 class="fs-24 fw-extrabold text-white">My Booking History</h1>
+            <p class="text-muted fs-095">Review all past, current, and upcoming vehicle reservations.</p>
+        </div>
+        <div class="d-flex gap-06">
+            <a href="{% url 'normal_cars' %}" class="btn btn-outline"><i class="fa-solid fa-car"></i> Rent Normal</a>
+            <a href="{% url 'premium_cars' %}" class="btn btn-primary"><i class="fa-solid fa-gem"></i> Rent Premium</a>
+        </div>
+    </div>
+
+    <!-- Filter Pills -->
+    <div class="d-flex gap-06 mb-15 flex-wrap">
+        <a href="{% url 'booking_history' %}" class="btn btn-sm {% if not request.GET.status %}btn-primary{% else %}btn-dark{% endif %}">All Bookings</a>
+        <a href="{% url 'booking_history' %}?status=Confirmed" class="btn btn-sm {% if request.GET.status == 'Confirmed' %}btn-primary{% else %}btn-dark{% endif %}">Confirmed</a>
+        <a href="{% url 'booking_history' %}?status=Ongoing" class="btn btn-sm {% if request.GET.status == 'Ongoing' %}btn-primary{% else %}btn-dark{% endif %}">Ongoing</a>
+        <a href="{% url 'booking_history' %}?status=Completed" class="btn btn-sm {% if request.GET.status == 'Completed' %}btn-primary{% else %}btn-dark{% endif %}">Completed</a>
+        <a href="{% url 'booking_history' %}?status=Cancelled" class="btn btn-sm {% if request.GET.status == 'Cancelled' %}btn-primary{% else %}btn-dark{% endif %}">Cancelled</a>
+    </div>
+
+    <div class="card card-glow">
+        {% if bookings %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Booking Ref</th>
+                            <th>Vehicle</th>
+                            <th>Rental Dates</th>
+                            <th>Days</th>
+                            <th>Rental Total</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Vehicle Inspections</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bookings %}
+                            <tr>
+                                <td><code>{{ b.booking_id }}</code></td>
+                                <td>
+                                    <strong>{{ b.car.name }}</strong>
+                                    <small class="d-block text-muted">{{ b.car.category }} Fleet</small>
+                                </td>
+                                <td>
+                                    {{ b.start_date|date:"M d" }} &rarr; {{ b.end_date|date:"M d, Y" }}
+                                </td>
+                                <td>{{ b.total_days }}</td>
+                                <td><strong class="text-white">₹{{ b.total_amount }}</strong></td>
+                                <td>
+                                    <span class="badge {% if b.payment_status == 'Paid' %}badge-approved{% else %}badge-warning{% endif %}">
+                                        {{ b.payment_status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge {% if b.status == 'Confirmed' or b.status == 'Completed' %}badge-approved{% elif b.status == 'Cancelled' %}badge-rejected{% else %}badge-warning{% endif %}">
+                                        {{ b.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-035">
+                                        <a href="{% url 'before_inspection' b.id %}" class="btn btn-sm btn-dark" title="Pre-Trip Inspection">Pre</a>
+                                        <a href="{% url 'after_inspection' b.id %}" class="btn btn-sm btn-dark" title="Post-Trip Return Inspection">Post</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'booking_details' b.id %}" class="btn btn-sm btn-outline-red">
+                                        View Details
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-35 text-center text-muted">
+                <i class="fa-solid fa-receipt fs-3 text-dark mb-1 d-block"></i>
+                <h3 class="text-white mb-05">No bookings found</h3>
+                <p class="mb-15">You do not have any vehicle bookings matching this filter.</p>
+                <a href="{% url 'normal_cars' %}" class="btn btn-primary">Browse Vehicles</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

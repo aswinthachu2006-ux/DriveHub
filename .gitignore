@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Django local data and secrets
+db.sqlite3
+.env
+.env.*
+!.env.example
+
+# User uploads can contain identity documents and personal photos
+media/
+
+# Local environments and tooling
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+*.log

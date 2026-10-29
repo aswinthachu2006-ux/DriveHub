@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container pt-3">
+    <div class="text-center max-w-650 m-auto-b3">
+        <span class="badge badge-premium mb-1"><i class="fa-solid fa-headset"></i> 24/7 Customer Care</span>
+        <h1 class="fs-28 fw-extrabold text-white mb-1">Get In Touch</h1>
+        <p class="text-muted fs-105">
+            Have questions regarding car availability, driving licence approvals, or rental contracts? Our team is always on standby.
+        </p>
+    </div>
+
+    <div class="grid grid-2 gap-3 mb-4">
+        <!-- Contact Form Card -->
+        <div class="card card-glow p-25">
+            <h3 class="text-white fs-14 mb-15">Send a Message</h3>
+            
+            <form method="post" action="{% url 'contact' %}">
+                {% csrf_token %}
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" name="name" required class="form-control" placeholder="Aswin Kumar">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Email Address *</label>
+                        <input type="email" name="email" required class="form-control" placeholder="aswin@example.com">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" name="phone" class="form-control" placeholder="+91 98765 43210">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Subject *</label>
+                        <input type="text" name="subject" required class="form-control" placeholder="Licence verification / Booking query">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Message Details *</label>
+                    <textarea name="message" required class="form-control" rows="5" placeholder="How can we assist you with your rental?"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg w-100">
+                    <i class="fa-solid fa-paper-plane"></i> Send Inquiry
+                </button>
+            </form>
+        </div>
+
+        <!-- Hub Information & Road Assistance -->
+        <div class="d-flex flex-column gap-15">
+            <div class="card p-2 border-left-primary-4">
+                <div class="d-flex align-center gap-1 mb-1">
+                    <div class="w-48 h-48 bg-primary-15 rounded-sm d-flex align-center justify-center text-primary fs-13">
+                        <i class="fa-solid fa-truck-medical"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-white fs-115 mb-02">24/7 Roadside Assistance</h4>
+                        <p class="text-muted fs-085">Flat tire, battery jump, towing & immediate roadside support</p>
+                    </div>
+                </div>
+                <div class="fs-15 fw-extrabold text-primary tracking-wide">
+                    +91 1800 374 8348 (Toll Free)
+                </div>
+            </div>
+
+            <div class="card p-2">
+                <h4 class="text-white fs-115 mb-125">
+                    <i class="fa-solid fa-building text-primary mr-05"></i> DriveHub Fleet Hubs
+                </h4>
+                
+                <div class="mb-125">
+                    <strong class="text-white fs-095">Downtown Flagship Terminal</strong>
+                    <p class="text-muted fs-088">101 Performance Way, Downtown Metro &bull; Open 24/7</p>
+                </div>
+
+                <div class="mb-125">
+                    <strong class="text-white fs-095">Airport Express Concierge</strong>
+                    <p class="text-muted fs-088">Terminal 3 International Arrivals, Flight Deck A &bull; Open 24/7</p>
+                </div>
+
+                <div>
+                    <strong class="text-white fs-095">Customer Care Email</strong>
+                    <p class="text-muted fs-088">support@drivehub.internal &bull; Response within 1 hour</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

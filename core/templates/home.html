@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero">
+    <div class="container hero-grid">
+        <div>
+            <span class="badge badge-premium mb-125">
+                <i class="fa-solid fa-fire"></i> Fast, Verified, Reliable
+            </span>
+            <h1 class="hero-title">Drive The Road In <span>Pure Style & Power</span></h1>
+            <p class="hero-subtitle">
+                Welcome to DriveHub. Browse our curated fleet of economical normal cars and high-octane premium vehicles. Transparent pricing, strict safety inspections, and instant eligibility checking.
+            </p>
+            <div class="d-flex gap-1 flex-wrap">
+                <a href="{% url 'normal_cars' %}" class="btn btn-primary btn-lg">
+                    <i class="fa-solid fa-car"></i> Explore Normal Cars
+                </a>
+                <a href="{% url 'premium_cars' %}" class="btn btn-outline-red btn-lg">
+                    <i class="fa-solid fa-gem"></i> Premium Fleet
+                </a>
+            </div>
+        </div>
+
+        <!-- Quick Search Box -->
+        <div class="hero-search-box">
+            <h3 class="fs-13 mb-125 d-flex align-center gap-06">
+                <i class="fa-solid fa-sliders text-primary"></i> Find Your Ride
+            </h3>
+            <form method="get" action="{% url 'home' %}">
+                <div class="form-group">
+                    <label class="form-label">Category</label>
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        <option value="Normal" {% if request.GET.category == 'Normal' %}selected{% endif %}>Normal Cars (Budget & Commuter)</option>
+                        <option value="Premium" {% if request.GET.category == 'Premium' %}selected{% endif %}>Premium Cars (Luxury & Sport)</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Transmission</label>
+                        <select name="transmission" class="form-select">
+                            <option value="">Any</option>
+                            <option value="Automatic" {% if request.GET.transmission == 'Automatic' %}selected{% endif %}>Automatic</option>
+                            <option value="Manual" {% if request.GET.transmission == 'Manual' %}selected{% endif %}>Manual</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Fuel Type</label>
+                        <select name="fuel" class="form-select">
+                            <option value="">Any</option>
+                            <option value="Petrol" {% if request.GET.fuel == 'Petrol' %}selected{% endif %}>Petrol</option>
+                            <option value="Diesel" {% if request.GET.fuel == 'Diesel' %}selected{% endif %}>Diesel</option>
+                            <option value="Electric" {% if request.GET.fuel == 'Electric' %}selected{% endif %}>Electric</option>
+                            <option value="Hybrid" {% if request.GET.fuel == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Search by Model / Brand</label>
+                    <input type="text" name="q" value="{{ request.GET.q }}" placeholder="e.g. BMW, Toyota, Sedan..." class="form-control">
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-magnifying-glass"></i> Search Vehicles
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Main Fleet Display -->
+<section class="container pt-35">
+    <div class="d-flex justify-between align-end mb-2">
+        <div>
+            <span class="text-primary fw-bold text-uppercase fs-085 tracking-wide">Ready For The Road</span>
+            <h2 class="fs-2 fw-extrabold text-white">Featured Vehicles</h2>
+        </div>
+        <div class="d-flex gap-06">
+            <a href="{% url 'normal_cars' %}" class="btn btn-sm btn-outline">Normal Cars</a>
+            <a href="{% url 'premium_cars' %}" class="btn btn-sm btn-outline-red">Premium Cars</a>
+        </div>
+    </div>
+        <div class="grid grid-3">
+                <div class="card car-card {% if car.category == 'Premium' %}card-glow{% endif %}">
+                    <div class="car-card-img-wrap">
+                        <div class="car-card-tag">
+                            {% if car.category == 'Premium' %}
+                                <span class="badge badge-premium"><i class="fa-solid fa-gem"></i> Premium</span>
+                            {% else %}
+                                <span class="badge badge-normal"><i class="fa-solid fa-car"></i> Normal</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="car-card-price-tag">
+                            <span>₹{{ car.daily_rental_price }}</span> <small class="text-muted fs-sm">/day</small>
+                        </div>
+
+                        <img src="{{ car.get_image_url }}" alt="{{ car.name }}" onerror="this.src='/static/images/car-placeholder.svg'">
+                    </div>
+
+                    <div class="car-card-content">
+                        <div class="d-flex justify-between align-baseline">
+                            <span class="fs-08 text-muted fw-semibold text-uppercase">{{ car.brand }} &bull; {{ car.model_year }}</span>
+                            {% if car.status == 'Available' %}
+                                <span class="badge badge-approved fs-xs">Available</span>
+                            {% else %}
+                                <span class="badge badge-warning fs-xs">{{ car.status }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h3 class="car-card-title">{{ car.name }}</h3>
+
+                        <div class="car-specs-row">
+                            <span class="spec-pill"><i class="fa-solid fa-gear"></i> {{ car.transmission }}</span>
+                            <span class="spec-pill"><i class="fa-solid fa-gas-pump"></i> {{ car.fuel_type }}</span>
+                            <span class="spec-pill"><i class="fa-solid fa-users"></i> {{ car.seating_capacity }} Seats</span>
+                            <span class="spec-pill"><i class="fa-solid fa-id-badge"></i> Min Age: {{ car.minimum_age }}+</span>
+                        </div>
+
+                        <p class="text-muted fs-086 mb-125 lh-15 flex-1">
+                            {{ car.description|truncatewords:16 }}
+                        </p>
+
+                        <div class="d-flex gap-075 mt-auto">
+                            {% if car.id %}
+                         <a href="{% url 'car_details' car.id %}" class="btn btn-outline flex-1">
+                          Details
+                        </a>
+                           {% endif %}
+                           {% if car.id %}
+                            <a href="{% url 'booking' car.id %}" class="btn btn-primary flex-1">
+                                Book Now
+                           {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+        </div>
+        <div class="card p-3 text-center">
+            <i class="fa-solid fa-car-side fs-3 text-dark mb-1"></i>
+            <h3>No vehicles found matching your criteria.</h3>
+            <p class="text-muted mb-15">Try adjusting your search filters or browse all cars.</p>
+            <a href="{% url 'home' %}" class="btn btn-primary">Clear Filters</a>
+        </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-secondary mt-5 border-top-dark border-bottom-dark" id="how-it-works">
+    <div class="container">
+        <div class="text-center max-w-650 m-auto-b35">
+            <span class="text-primary fw-bold text-uppercase fs-085 tracking-wide">Simple & Transparent</span>
+            <h2 class="fs-22 fw-extrabold text-white my-05-b1">How DriveHub Works</h2>
+            <p class="text-muted">Rent your preferred car in four simple, secure steps backed by rule-based verification and automated inspection tracking.</p>
+        </div>
+
+        <div class="grid grid-4">
+            <div class="card p-2 text-center border-top-primary-3">
+                <div class="w-55 h-55 bg-primary-15 rounded-circle d-flex align-center justify-center m-auto-b125 text-primary fs-14">
+                    1
+                </div>
+                <h4 class="fs-115 text-white mb-06">Select Car</h4>
+                <p class="text-muted fs-088">Explore normal and premium cars, comparing specifications, seating, and daily rates.</p>
+            </div>
+
+            <div class="card p-2 text-center border-top-primary-3">
+                <div class="w-55 h-55 bg-primary-15 rounded-circle d-flex align-center justify-center m-auto-b125 text-primary fs-14">
+                    2
+                </div>
+                <h4 class="fs-115 text-white mb-06">Upload Licence</h4>
+                <p class="text-muted fs-088">Submit your driving licence for rapid verification to satisfy eligibility guidelines.</p>
+            </div>
+
+            <div class="card p-2 text-center border-top-primary-3">
+                <div class="w-55 h-55 bg-primary-15 rounded-circle d-flex align-center justify-center m-auto-b125 text-primary fs-14">
+                    3
+                </div>
+                <h4 class="fs-115 text-white mb-06">Book & Pay</h4>
+                <p class="text-muted fs-088">Choose rental dates, review automated cost calculations, and confirm your reservation.</p>
+            </div>
+
+            <div class="card p-2 text-center border-top-primary-3">
+                <div class="w-55 h-55 bg-primary-15 rounded-circle d-flex align-center justify-center m-auto-b125 text-primary fs-14">
+                    4
+                </div>
+                <h4 class="fs-115 text-white mb-06">Inspect & Drive</h4>
+                <p class="text-muted fs-088">Complete digital vehicle handover inspection, record odometer/fuel, and start driving!</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Fleet & Booking Banner -->
+<section class="container hero-card-padding">
+    <div class="card card-glow bg-grad-dark p-3 border-red rounded-lg">
+        <div class="d-flex justify-between align-center flex-wrap gap-2">
+            <div class="max-w-680">
+                <span class="badge badge-approved mb-1"><i class="fa-solid fa-shield-check"></i> Quality & Safety First</span>
+                <h2 class="fs-21 text-white mb-1">Experience Seamless Car Rentals</h2>
+                <p class="text-muted fs-1 lh-17">
+                    Explore our fleet of economy daily commuters and high-performance luxury sports vehicles. Transparent pricing, instant booking confirmation, and pre/post-trip vehicle inspection management.
+                </p>
+            </div>
+            <div>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'normal_cars' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-car"></i> Browse Fleet & Book</a>
+                {% else %}
+                    <a href="{% url 'signup' %}" class="btn btn-primary btn-lg"><i class="fa-solid fa-user-plus"></i> Create Free Account</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

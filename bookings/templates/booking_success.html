@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-650 pt-35">
+    <div class="card card-glow py-3-px-25 text-center border-top-success-4">
+        <div class="w-72 h-72 bg-success-15 border-success-40 rounded-circle d-flex align-center justify-center m-auto-b15 text-success fs-22">
+            <i class="fa-solid fa-check"></i>
+        </div>
+
+        <span class="badge badge-approved mb-075">Payment & Reservation Confirmed</span>
+        <h1 class="fs-22 fw-extrabold text-white mb-05">You're Ready To Drive!</h1>
+        <p class="text-muted fs-095 mb-2">
+            Your reservation is officially confirmed. A confirmation copy has been registered to your account.
+        </p>
+
+        <!-- Booking Receipt Box -->
+        <div class="bg-black-30 border-dark rounded-sm p-15 text-left mb-2">
+            <div class="d-flex justify-between border-bottom-dark pb-075 mb-075">
+                <span class="text-muted fs-088">Booking Reference</span>
+                <code class="fs-1 text-white">{{ booking.booking_id }}</code>
+            </div>
+
+            <div class="d-flex justify-between border-bottom-dark pb-075 mb-075">
+                <span class="text-muted fs-088">Reserved Vehicle</span>
+                <strong class="text-white">{{ booking.car.brand }} {{ booking.car.name }}</strong>
+            </div>
+
+            <div class="d-flex justify-between border-bottom-dark pb-075 mb-075">
+                <span class="text-muted fs-088">Rental Duration</span>
+                <strong class="text-white">{{ booking.start_date|date:"M d" }} &rarr; {{ booking.end_date|date:"M d, Y" }} ({{ booking.total_days }} Days)</strong>
+            </div>
+
+            <div class="d-flex justify-between border-bottom-dark pb-075 mb-075">
+                <span class="text-muted fs-088">Payment Status</span>
+                <span class="badge badge-approved"><i class="fa-solid fa-lock"></i> Paid (₹{{ booking.total_amount }})</span>
+            </div>
+
+            <div class="d-flex justify-between">
+                <span class="text-muted fs-088">Transaction Ref</span>
+                <span class="text-muted fs-085">{{ booking.transaction_id|default:"SIM-TXN-SUCCESS" }}</span>
+            </div>
+        </div>
+
+        <!-- Next Step Notice -->
+        <div class="bg-primary-08 border-primary-30 rounded-sm p-125 mb-2 text-left">
+            <div class="d-flex gap-08 align-start">
+                <i class="fa-solid fa-clipboard-check text-primary fs-13 mt-02"></i>
+                <div>
+                    <strong class="text-white fs-095 d-block mb-025">Next: Vehicle Pre-Handover Inspection</strong>
+                    <p class="text-muted fs-084 m-0 lh-15">
+                        Before you take delivery of your car at the hub, complete or review the digital Pre-Trip Handover Inspection to verify initial odometer readings, fuel tank levels, and condition.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex gap-1 flex-wrap">
+            <a href="{% url 'before_inspection' booking.id %}" class="btn btn-primary btn-lg flex-1">
+                <i class="fa-solid fa-clipboard-check"></i> Vehicle Pre-Inspection &rarr;
+            </a>
+            <a href="{% url 'booking_details' booking.id %}" class="btn btn-outline btn-lg flex-1">
+                View Booking Details
+            </a>
+        </div>
+
+        <div class="mt-15">
+            <a class="text-muted fs-09" href="{% url 'dashboard' %}">
+                &larr; Return to Customer Dashboard
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

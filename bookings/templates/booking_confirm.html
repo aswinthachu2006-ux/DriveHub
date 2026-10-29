@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-800 pt-3">
+    <!-- Step Header -->
+    <div class="text-center mb-25">
+        <span class="badge badge-premium mb-05">Step 2 of 3</span>
+        <h1 class="fs-24 fw-extrabold text-white">Confirm Your Reservation</h1>
+        <p class="text-muted fs-095">Please review your rental itinerary and pricing details before payment.</p>
+    </div>
+
+    <div class="card card-glow p-25 border-top-primary-4 mb-2">
+        <!-- Vehicle Row -->
+        <div class="d-flex gap-15 align-center border-bottom-dark pb-2 mb-2 flex-wrap">
+            <img class="w-180px h-110px obj-cover rounded-sm border-dark" src="{{ booking.car.get_image_url }}" alt="{{ booking.car.name }}" onerror="this.src='/static/images/car-placeholder.svg'">
+            <div>
+                <span class="badge {% if booking.car.category == 'Premium' %}badge-premium{% else %}badge-normal{% endif %} mb-04">
+                    {{ booking.car.category }} Vehicle
+                </span>
+                <h2 class="fs-18 text-white fw-extrabold mb-025">{{ booking.car.brand }} {{ booking.car.name }}</h2>
+                <div class="d-flex gap-1 text-muted fs-088">
+                    <span><i class="fa-solid fa-gear"></i> {{ booking.car.transmission }}</span>
+                    <span><i class="fa-solid fa-gas-pump"></i> {{ booking.car.fuel_type }}</span>
+                    <span><i class="fa-solid fa-users"></i> {{ booking.car.seating_capacity }} Seats</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedule & Locations Grid -->
+        <div class="grid grid-2 gap-15 mb-2">
+            <div class="bg-black-30 border-dark rounded-sm p-125">
+                <span class="text-muted fs-08 text-uppercase">Pickup Schedule</span>
+                <div class="fs-115 fw-bold text-white my-03">{{ booking.start_date|date:"l, M d, Y" }}</div>
+                <div class="text-muted fs-085"><i class="fa-solid fa-location-dot text-primary"></i> {{ booking.pickup_location }}</div>
+            </div>
+
+            <div class="bg-black-30 border-dark rounded-sm p-125">
+                <span class="text-muted fs-08 text-uppercase">Return Schedule</span>
+                <div class="fs-115 fw-bold text-white my-03">{{ booking.end_date|date:"l, M d, Y" }}</div>
+                <div class="text-muted fs-085"><i class="fa-solid fa-location-crosshairs text-primary"></i> {{ booking.dropoff_location }}</div>
+            </div>
+        </div>
+
+        <!-- Driver Info Row -->
+        <div class="bg-black-20 border-dark rounded-sm p-125 mb-2">
+            <h4 class="text-white fs-1 mb-075 d-flex align-center gap-05">
+                <i class="fa-solid fa-user-check text-success"></i> Verified Driver Credentials
+            </h4>
+            <div class="grid grid-3 fs-088">
+                <div>
+                    <span class="text-muted d-block">Renter Name:</span>
+                    <strong class="text-white">{{ booking.user.get_full_name|default:booking.user.username }}</strong>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Licence Number:</span>
+                    <code class="text-white">{{ booking.user.profile.licence_number }}</code>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Verification Status:</span>
+                    <span class="badge badge-approved fs-xs"><i class="fa-solid fa-check"></i> Verified</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Financial Breakdown -->
+        <div class="border-top-dark pt-15 mb-2">
+            <h4 class="text-white fs-11 mb-1">Payment Summary</h4>
+            
+            <div class="d-flex justify-between py-05 fs-095 text-light">
+                <span>Daily Rental Rate &times; {{ booking.total_days }} Day{{ booking.total_days|pluralize }}:</span>
+                <span>₹{{ booking.daily_rate }} &times; {{ booking.total_days }} = <strong>₹{{ booking.rental_charge }}</strong></span>
+            </div>
+
+            <div class="d-flex justify-between py-05 fs-095 text-light">
+                <span>Refundable Security Deposit:</span>
+                <span><strong>₹{{ booking.security_deposit }}</strong></span>
+            </div>
+
+            <div class="d-flex justify-between py-05 fs-095 text-success">
+                <span>Pre & Post Trip Inspections:</span>
+                <span>Free (₹0.00)</span>
+            </div>
+
+            <div class="d-flex justify-between pt-125 border-top-dark-2 mt-05">
+                <span class="fs-12 fw-bold text-white">Total Due Now:</span>
+                <span class="fs-16 fw-extrabold text-primary">₹{{ booking.total_amount }}</span>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="d-flex gap-1 flex-wrap">
+            <a href="{% url 'payment' booking.id %}" class="btn btn-primary btn-lg flex-2">
+                <i class="fa-solid fa-credit-card"></i> Proceed to Secure Payment &rarr;
+            </a>
+            <a href="{% url 'booking' booking.car.id %}" class="btn btn-dark btn-lg flex-1">
+                Modify Dates
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

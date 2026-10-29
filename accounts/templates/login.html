@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-520 pt-4">
+    <div class="card card-glow p-25 border-top-primary-4">
+        <div class="text-center mb-2">
+            <div class="logo-badge m-auto-b1 w-44 h-44 fs-125">
+                <i class="fa-solid fa-car-side"></i>
+            </div>
+            <h2 class="text-white fs-18 fw-extrabold">Welcome Back</h2>
+            <p class="text-muted fs-09">Sign in to manage your bookings and rentals</p>
+        </div>
+
+        <form method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-user"></i> Username</label>
+                <input type="text" id="id_username" name="username" required class="form-control" placeholder="Enter your username">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-lock"></i> Password</label>
+                <input type="password" id="id_password" name="password" required class="form-control" placeholder="Enter your password">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-05">
+                <i class="fa-solid fa-right-to-bracket"></i> Sign In to DriveHub
+            </button>
+        </form>
+
+        <!-- Quick Demo Fill Section for Testing -->
+        <div class="mt-2 pt-15 border-top-dark text-center">
+            <span class="text-muted fs-08 text-uppercase tracking-sm d-block mb-075">
+                Quick Demo Testing Accounts
+            </span>
+            <div class="d-flex gap-05 justify-center">
+                <button type="button" class="btn btn-sm btn-dark" onclick="fillCredentials('admin', 'admin123')">
+                    <i class="fa-solid fa-user-shield text-primary"></i> Fill Admin
+                </button>
+                <button type="button" class="btn btn-sm btn-dark" onclick="fillCredentials('customer', 'pass123')">
+                    <i class="fa-solid fa-user text-success"></i> Fill Customer
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-15 text-center fs-09 text-muted">
+            Don't have an account yet? 
+            <a class="text-primary fw-semibold" href="{% url 'signup' %}">Sign up here</a>
+        </div>
+    </div>
+</div>
+
+<script>
+function fillCredentials(user, pass) {
+    document.getElementById('id_username').value = user;
+    document.getElementById('id_password').value = pass;
+}
+</script>
+{% endblock %}

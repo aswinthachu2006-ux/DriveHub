@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-800 pt-3">
+    <!-- Breadcrumb -->
+    <div class="mb-15 d-flex justify-between align-center">
+        <a href="{% url 'after_inspection' damage.inspection.booking.id %}" class="btn btn-sm btn-dark">
+            <i class="fa-solid fa-arrow-left"></i> Back to Return Inspection
+        </a>
+        <a href="{% url 'booking_details' damage.inspection.booking.id %}" class="btn btn-sm btn-outline">
+            Booking Details
+        </a>
+    </div>
+
+    <div class="card card-glow p-25 border-top-danger-4">
+        <div class="d-flex justify-between align-center border-bottom-dark pb-15 mb-2 flex-wrap gap-1">
+            <div>
+                <span class="badge badge-rejected mb-04">Incident Assessment</span>
+                <h1 class="text-white fs-2 fw-extrabold">{{ damage.damage_title }}</h1>
+                <p class="text-muted fs-09">Reported on {{ damage.reported_at|date:"F d, Y &bull; h:i A" }}</p>
+            </div>
+            <div>
+                {% if damage.payment_status == 'Paid' %}
+                    <span class="badge badge-approved fs-095 p-05-125">
+                        <i class="fa-solid fa-circle-check"></i> Paid & Settled
+                    </span>
+                {% elif damage.payment_status == 'Waived' %}
+                    <span class="badge badge-approved fs-095 p-05-125">
+                        <i class="fa-solid fa-shield"></i> Insurance Waived
+                    </span>
+                {% else %}
+                    <span class="badge badge-rejected fs-095 p-05-125">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Payment Pending
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Damage Overview Grid -->
+        <div class="grid grid-2 gap-2 mb-2 align-start">
+            <!-- Left: Damage Info -->
+            <div class="bg-black-30 border-dark rounded-sm p-15">
+                <h4 class="text-white fs-11 mb-125 d-flex align-center gap-05">
+                    <i class="fa-solid fa-circle-info text-primary"></i> Incident Specifications
+                </h4>
+
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Classification</span>
+                    <strong class="text-white">{{ damage.damage_type }}</strong>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Severity</span>
+                    <span class="badge {% if damage.severity == 'Severe' %}badge-rejected{% elif damage.severity == 'Moderate' %}badge-warning{% else %}badge-normal{% endif %}">
+                        {{ damage.severity }}
+                    </span>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Assessed Repair Cost</span>
+                    <strong class="text-primary fs-14">₹{{ damage.estimated_cost }}</strong>
+                </div>
+
+                <div>
+                    <span class="text-muted fs-082 d-block">Incident Description</span>
+                    <p class="text-light fs-09 lh-16 mt-025">
+                        {{ damage.description }}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right: Photo Evidence -->
+            <div class="bg-black-30 border-dark rounded-sm p-15 text-center">
+                <h4 class="text-white fs-11 mb-1 text-left">
+                    <i class="fa-solid fa-camera text-primary"></i> Photographic Evidence
+                </h4>
+
+                {% if damage.damage_image %}
+                    <img class="max-h-220 rounded-sm border-dark obj-contain m-auto-b075" src="{{ damage.damage_image.url }}" alt="Damage Evidence">
+                {% else %}
+                    <div class="p-3-1 text-muted">
+                        <i class="fa-solid fa-image-slash fs-3 text-dark mb-075 d-block"></i>
+                        <span>No image attachment uploaded with this report.</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Settlement Status & Action -->
+        <div class="border-top-dark pt-15">
+            {% if damage.payment_status == 'Paid' %}
+                <div class="alert alert-success">
+                    <span><i class="fa-solid fa-circle-check"></i> <strong>Damage penalty has been fully paid and settled.</strong> Transaction Ref: <code>{{ damage.transaction_id }}</code> on {{ damage.paid_at|date:"M d, Y" }}.</span>
+                </div>
+            {% else %}
+                <div class="d-flex justify-between align-center flex-wrap gap-1">
+                    <div>
+                        <strong class="text-white fs-11 d-block">Outstanding Damage Settlement Due: ₹{{ damage.estimated_cost }}</strong>
+                        <p class="text-muted fs-085 m-0">Settle this fee via credit card, UPI, or cash deduction to release rental security deposits.</p>
+                    </div>
+                    <a href="{% url 'damage_payment' damage.id %}" class="btn btn-primary btn-lg bg-danger">
+                        <i class="fa-solid fa-credit-card"></i> Settle Damage Fee Now &rarr;
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

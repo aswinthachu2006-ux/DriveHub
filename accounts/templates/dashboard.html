@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container pt-3">
+    <!-- Welcome Header -->
+    <div class="d-flex justify-between align-center mb-25 flex-wrap gap-1">
+        <div>
+            <span class="text-primary fw-bold text-uppercase fs-085 tracking-wide">Member Area</span>
+            <h1 class="fs-23 fw-extrabold text-white">Hello, {{ user.first_name|default:user.username }}</h1>
+            <p class="text-muted fs-095">Manage your active rentals, licence verification, and vehicle inspections.</p>
+        </div>
+        <div class="d-flex gap-075">
+            <a href="{% url 'normal_cars' %}" class="btn btn-primary"><i class="fa-solid fa-car"></i> Rent Normal Car</a>
+            <a href="{% url 'premium_cars' %}" class="btn btn-outline-red"><i class="fa-solid fa-gem"></i> Rent Premium</a>
+        </div>
+    </div>
+
+    <!-- Licence Status Alert Callout -->
+    {% if user.profile.licence_status == 'Not Uploaded' %}
+        <div class="card card-glow p-15 mb-2 border-left-warning-4 bg-warning-08">
+            <div class="d-flex justify-between align-center flex-wrap gap-1">
+                <div>
+                    <h4 class="text-warning mb-025"><i class="fa-solid fa-id-card"></i> Demo Licence Verification</h4>
+                    <p class="text-muted fs-088 m-0">Real-time verification blockers removed. You can book directly or verify in 1 click.</p>
+                </div>
+                <div class="d-flex gap-05">
+                    <form class="d-inline" method="post" action="{% url 'demo_licence_verify' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="activate_valid">
+                        <button type="submit" class="btn btn-sm btn-success"><i class="fa-solid fa-bolt"></i> 1-Click Demo Verify</button>
+                    </form>
+                    <a href="{% url 'licence_upload' %}" class="btn btn-sm btn-outline">Upload Details</a>
+                </div>
+            </div>
+        </div>
+    {% elif user.profile.licence_status == 'Pending' %}
+        <div class="card p-15 mb-2 border-left-info-4 bg-info-08">
+            <div class="d-flex justify-between align-center flex-wrap gap-1">
+                <div>
+                    <h4 class="text-info mb-025"><i class="fa-solid fa-clock"></i> Licence Verification (Simulated Pending)</h4>
+                    <p class="text-muted fs-088 m-0">In demo mode, you can activate instant demo approval at any time.</p>
+                </div>
+                <form method="post" action="{% url 'demo_licence_verify' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="activate_valid">
+                    <button type="submit" class="btn btn-sm btn-success"><i class="fa-solid fa-bolt"></i> 1-Click Demo Approve</button>
+                </form>
+            </div>
+        </div>
+    {% elif user.profile.licence_status == 'Rejected' %}
+        <div class="card p-15 mb-2 border-left-danger-4 bg-danger-08">
+            <div class="d-flex justify-between align-center flex-wrap gap-1">
+                <div>
+                    <h4 class="text-danger mb-025"><i class="fa-solid fa-circle-xmark"></i> Driving Licence Rejected</h4>
+                    <p class="text-muted fs-088 m-0">Reason: {{ user.profile.rejection_reason|default:"Document invalid or unclear." }}</p>
+                </div>
+                <a href="{% url 'licence_upload' %}" class="btn btn-sm btn-primary">Re-upload Licence</a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Key Metrics Grid -->
+    <div class="grid grid-4 mb-25">
+        <div class="card p-15">
+            <span class="text-muted fs-082 text-uppercase">Licence Status</span>
+            <div class="mt-05 d-flex align-center gap-05">
+                {% if user.profile.licence_status == 'Approved' %}
+                    <span class="badge badge-approved"><i class="fa-solid fa-check"></i> Verified</span>
+                {% elif user.profile.licence_status == 'Pending' %}
+                    <span class="badge badge-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                {% elif user.profile.licence_status == 'Rejected' %}
+                    <span class="badge badge-rejected"><i class="fa-solid fa-xmark"></i> Rejected</span>
+                {% else %}
+                    <span class="badge badge-normal">Not Uploaded</span>
+                {% endif %}
+            </div>
+            <a class="text-primary fs-08 mt-08 d-inline-block" href="{% url 'licence_status' %}">View Credentials &rarr;</a>
+        </div>
+
+        <div class="card p-15">
+            <span class="text-muted fs-082 text-uppercase">Total Reservations</span>
+            <div class="fs-18 fw-extrabold text-white mt-025">
+                {{ total_bookings_count }}
+            </div>
+            <span class="text-dark fs-08">Lifetime DriveHub trips</span>
+        </div>
+
+        <div class="card p-15">
+            <span class="text-muted fs-082 text-uppercase">Active Rentals</span>
+            <div class="fs-18 fw-extrabold text-primary mt-025">
+                {{ active_bookings_count }}
+            </div>
+            <span class="text-dark fs-08">Ongoing or Confirmed</span>
+        </div>
+
+        <div class="card p-15">
+            <span class="text-muted fs-082 text-uppercase">Registered Driver Age</span>
+            <div class="fs-18 fw-extrabold text-white mt-025">
+                {% if user.profile.age %}{{ user.profile.age }} yrs{% else %}N/A{% endif %}
+            </div>
+            <span class="text-dark fs-08">Normal (21+) | Premium (25+)</span>
+        </div>
+    </div>
+
+    <!-- Active Booking Spotlight (if any) -->
+    {% if current_booking %}
+        <div class="card card-glow p-2 mb-25 border-top-primary-3">
+            <div class="d-flex justify-between align-center mb-1 flex-wrap">
+                <div>
+                    <span class="badge badge-premium mb-04">Active Trip Focus</span>
+                    <h3 class="text-white fs-14">Booking #{{ current_booking.booking_id }} &ndash; {{ current_booking.car.name }}</h3>
+                </div>
+                <span class="badge {% if current_booking.status == 'Confirmed' or current_booking.status == 'Ongoing' %}badge-approved{% else %}badge-warning{% endif %}">
+                    {{ current_booking.status }}
+                </span>
+            </div>
+
+            <div class="grid grid-3 my-15 fs-09">
+                <div>
+                    <span class="text-muted d-block">Pickup Schedule:</span>
+                    <strong class="text-white">{{ current_booking.start_date|date:"M d, Y" }}</strong>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Return Schedule:</span>
+                    <strong class="text-white">{{ current_booking.end_date|date:"M d, Y" }} ({{ current_booking.total_days }} Days)</strong>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Total Paid:</span>
+                    <strong class="text-primary">₹{{ current_booking.total_amount }}</strong>
+                </div>
+            </div>
+
+            <div class="d-flex gap-075 flex-wrap">
+                <a href="{% url 'booking_details' current_booking.id %}" class="btn btn-outline">
+                    <i class="fa-solid fa-receipt"></i> Full Booking Details
+                </a>
+                <a href="{% url 'before_inspection' current_booking.id %}" class="btn btn-dark">
+                    <i class="fa-solid fa-clipboard-check"></i> Pre-Trip Inspection
+                </a>
+                <a href="{% url 'after_inspection' current_booking.id %}" class="btn btn-dark">
+                    <i class="fa-solid fa-flag-checkered"></i> Post-Trip Inspection
+                </a>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Recent Bookings Table -->
+    <div class="card mb-25">
+        <div class="card-header">
+            <h3 class="text-white fs-125"><i class="fa-solid fa-history text-primary mr-05"></i> Recent Booking History</h3>
+            <a href="{% url 'booking_history' %}" class="btn btn-sm btn-outline">View All Bookings</a>
+        </div>
+        
+        {% if recent_bookings %}
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Booking ID</th>
+                            <th>Car</th>
+                            <th>Dates</th>
+                            <th>Duration</th>
+                            <th>Total Amount</th>
+                            <th>Status</th>
+                            <th>Inspection</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in recent_bookings %}
+                            <tr>
+                                <td><code>{{ b.booking_id }}</code></td>
+                                <td>
+                                    <strong>{{ b.car.name }}</strong>
+                                    <small class="d-block text-muted">{{ b.car.category }}</small>
+                                </td>
+                                <td>{{ b.start_date|date:"M d" }} &rarr; {{ b.end_date|date:"M d, Y" }}</td>
+                                <td>{{ b.total_days }} Day{{ b.total_days|pluralize }}</td>
+                                <td><strong>₹{{ b.total_amount }}</strong></td>
+                                <td>
+                                    {% if b.status == 'Confirmed' or b.status == 'Completed' %}
+                                        <span class="badge badge-approved">{{ b.status }}</span>
+                                    {% elif b.status == 'Cancelled' %}
+                                        <span class="badge badge-rejected">{{ b.status }}</span>
+                                    {% else %}
+                                        <span class="badge badge-pending">{{ b.status }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-03">
+                                        <a href="{% url 'before_inspection' b.id %}" class="btn btn-sm btn-dark" title="Pre-Inspection"><i class="fa-solid fa-list-check"></i> Pre</a>
+                                        <a href="{% url 'after_inspection' b.id %}" class="btn btn-sm btn-dark" title="Post-Inspection"><i class="fa-solid fa-flag-checkered"></i> Post</a>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'booking_details' b.id %}" class="btn btn-sm btn-outline-red">Details</a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-3 text-center text-muted">
+                <i class="fa-solid fa-receipt fs-25 text-dark mb-075 d-block"></i>
+                <p>You have not made any car reservations yet.</p>
+                <a href="{% url 'normal_cars' %}" class="btn btn-primary btn-sm mt-05">Explore Vehicles & Book</a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

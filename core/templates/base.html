@@ -1,0 +1,172 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}DriveHub – Car Rental Management System{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- DriveHub White & Blue Luxury Automotive Theme CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Main Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="{% url 'home' %}" class="logo">
+                <div class="logo-badge"><i class="fa-solid fa-car-side"></i></div>
+                <span>Drive</span>Hub
+            </a>
+
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}"><i class="fa-solid fa-house"></i> Home</a></li>
+                    <li><a href="{% url 'normal_cars' %}" class="nav-link {% if request.resolver_match.url_name == 'normal_cars' %}active{% endif %}"><i class="fa-solid fa-car"></i> Normal Cars</a></li>
+                    <li><a href="{% url 'premium_cars' %}" class="nav-link {% if request.resolver_match.url_name == 'premium_cars' %}active{% endif %}"><i class="fa-solid fa-gem"></i> Premium Cars</a></li>
+                    <li><a href="{% url 'about' %}" class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
+                    <li><a href="{% url 'contact' %}" class="nav-link {% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
+                </ul>
+            </nav>
+
+            <div class="nav-actions">
+                    <!-- Licence Status Pill -->
+                    {% if user.profile.licence_status == 'Approved' %}
+                        <a href="{% url 'licence_status' %}" class="badge badge-approved" title="Licence Verified (Demo)">
+                            <i class="fa-solid fa-circle-check"></i> Demo Verified
+                        </a>
+                    {% elif user.profile.licence_status == 'Pending' %}
+                        <a href="{% url 'licence_status' %}" class="badge badge-pending" title="Demo Verification Pending">
+                            <i class="fa-solid fa-clock"></i> Licence (Pending)
+                        </a>
+                    {% elif user.profile.licence_status == 'Rejected' %}
+                        <a href="{% url 'licence_upload' %}" class="badge badge-rejected" title="Licence Rejected - Re-verify">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Re-verify Licence
+                        </a>
+                    {% else %}
+                        <a href="{% url 'licence_upload' %}" class="badge badge-warning" title="Demo Licence Verification">
+                            <i class="fa-solid fa-id-card"></i> Verify Licence
+                        </a>
+                    {% endif %}
+
+                    <a href="{% url 'dashboard' %}" class="btn btn-sm btn-dark">
+                        <i class="fa-solid fa-user-circle"></i> Dashboard
+                    </a>
+                    
+                    <a href="{% url 'booking_history' %}" class="btn btn-sm btn-outline">
+                        <i class="fa-solid fa-receipt"></i> Bookings
+                    </a>
+
+                        <a href="/admin/" target="_blank" class="btn btn-sm btn-outline-red">
+                            <i class="fa-solid fa-shield-halved"></i> Admin
+                        </a>
+
+                    <form action="{% url 'logout' %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-dark" title="Logout">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </form>
+                    <a href="{% url 'login' %}" class="btn btn-sm btn-outline">Login</a>
+                    <a href="{% url 'register' %}" class="btn btn-sm btn-primary">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Global Notifications / Alerts -->
+    <div class="container messages-container">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %}">
+                    <span>
+                        {% if message.tags == 'success' %}<i class="fa-solid fa-circle-check"></i>
+                        {% elif message.tags == 'warning' %}<i class="fa-solid fa-triangle-exclamation"></i>
+                        {% elif message.tags == 'error' or message.tags == 'danger' %}<i class="fa-solid fa-circle-xmark"></i>
+                        {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+                        {{ message }}
+                    </span>
+                    <button type="button" onclick="this.parentElement.remove()" class="alert-close">&times;</button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Main Dynamic Content -->
+    <main class="main-content">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div>
+                    <div class="logo mb-1">
+                        <div class="logo-badge"><i class="fa-solid fa-car-side"></i></div>
+                        <span>Drive</span>Hub
+                    </div>
+                    <p class="footer-desc">
+                        Premium web-based car rental platform featuring rule-based licence verification, instant pricing calculations, and digital pre/post-trip vehicle inspection management.
+                    </p>
+                    <div class="d-flex gap-08">
+                        <span class="badge badge-normal"><i class="fa-solid fa-shield"></i> 100% Insured Fleet</span>
+                        <span class="badge badge-premium"><i class="fa-solid fa-bolt"></i> Instant Booking</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="footer-title">Vehicle Fleet</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'normal_cars' %}">Standard & Normal Cars</a></li>
+                        <li><a href="{% url 'premium_cars' %}">Luxury & Sports Fleet</a></li>
+                        <li><a href="{% url 'home' %}#how-it-works">How It Works</a></li>
+                        <li><a href="{% url 'home' %}#pricing">Pricing & Deposits</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-title">Customer Care</h4>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'licence_upload' %}">Driving Licence Verification</a></li>
+                        <li><a href="{% url 'about' %}#eligibility">Eligibility Guidelines</a></li>
+                        <li><a href="{% url 'contact' %}">24/7 Roadside Assistance</a></li>
+                        <li><a href="{% url 'about' %}#inspections">Inspection Policy</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="footer-title">Hub Headquarters</h4>
+                    <p class="footer-contact-item">
+                        <i class="fa-solid fa-location-dot text-primary"></i> 101 Performance Way, Downtown
+                    </p>
+                    <p class="footer-contact-item">
+                        <i class="fa-solid fa-phone text-primary"></i> +91 98765 43210
+                    </p>
+                    <p class="footer-contact-item mb-0">
+                        <i class="fa-solid fa-envelope text-primary"></i> support@drivehub.internal
+                    </p>
+                </div>
+            </div>
+
+            <div class="footer-bottom">
+                <div>&copy; 2026 DriveHub Car Rental Management System. All rights reserved.</div>
+                <div class="text-dark">Rule-based Architecture | Built with Django & Python</div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- DriveHub JavaScript -->
+    <script src="{% static 'script.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

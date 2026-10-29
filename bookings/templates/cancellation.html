@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-650 pt-35">
+    <!-- Breadcrumb -->
+    <div class="mb-15">
+        <a href="{% url 'booking_details' booking.id %}" class="btn btn-sm btn-dark">
+            <i class="fa-solid fa-arrow-left"></i> Back to Booking Details
+        </a>
+    </div>
+
+    <div class="card card-glow p-25 border-top-danger-4">
+        <div class="text-center mb-2">
+            <div class="w-58 h-58 bg-danger-15 rounded-circle d-flex align-center justify-center m-auto-b1 text-danger fs-16">
+                <i class="fa-solid fa-ban"></i>
+            </div>
+            <h2 class="text-white fs-18 fw-extrabold">Cancel Reservation?</h2>
+            <p class="text-muted fs-09">Are you sure you want to cancel booking <code>#{{ booking.booking_id }}</code>?</p>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="bg-black-30 border-dark rounded-sm p-125 mb-15">
+            <div class="d-flex justify-between mb-05 fs-09">
+                <span class="text-muted">Vehicle:</span>
+                <strong class="text-white">{{ booking.car.brand }} {{ booking.car.name }}</strong>
+            </div>
+            <div class="d-flex justify-between mb-05 fs-09">
+                <span class="text-muted">Schedule:</span>
+                <span class="text-white">{{ booking.start_date|date:"M d" }} &rarr; {{ booking.end_date|date:"M d, Y" }}</span>
+            </div>
+            <div class="d-flex justify-between fs-09">
+                <span class="text-muted">Refundable Amount:</span>
+                <strong class="text-success">₹{{ booking.total_amount }} (Full Refund)</strong>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'cancel_booking' booking.id %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Reason for Cancellation</label>
+                <select name="reason_preset" class="form-select mb-075">
+                    <option value="Change of travel plans">Change of travel plans</option>
+                    <option value="Found alternative transportation">Found alternative transportation</option>
+                    <option value="Trip postponed">Trip postponed</option>
+                    <option value="Other reason">Other reason</option>
+                </select>
+                <textarea name="cancellation_reason" class="form-control" rows="3" placeholder="Additional details (optional)..."></textarea>
+            </div>
+
+            <div class="d-flex gap-1 mt-15">
+                <button type="submit" class="btn btn-primary bg-danger flex-1">
+                    <i class="fa-solid fa-trash-can"></i> Yes, Cancel Reservation
+                </button>
+                <a href="{% url 'booking_details' booking.id %}" class="btn btn-dark flex-1">
+                    Keep Booking
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

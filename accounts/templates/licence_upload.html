@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-720 pt-3">
+    <div class="card card-glow p-25 border-top-primary-4">
+        <div class="d-flex align-center justify-between mb-15 border-bottom-dark pb-125">
+            <div>
+                <span class="badge badge-premium mb-04"><i class="fa-solid fa-id-card"></i> Demo Licence Verification</span>
+                <h2 class="text-white fs-18 fw-extrabold">Driving Licence Verification</h2>
+            </div>
+            <a href="{% url 'licence_status' %}" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-clock-rotate-left"></i> Check Status
+            </a>
+        </div>
+
+        {% if user.profile.licence_status == 'Approved' %}
+            <div class="alert alert-success mb-15">
+                <span><i class="fa-solid fa-circle-check"></i> Your licence is currently <strong>Approved & Verified (Demo Mode)</strong>. You have unrestricted access to all car rentals.</span>
+            </div>
+        {% elif user.profile.licence_status == 'Rejected' %}
+            <div class="alert alert-danger mb-15">
+                <span><i class="fa-solid fa-circle-xmark"></i> <strong>Verification Status:</strong> {{ user.profile.rejection_reason|default:"The licence is invalid or expired." }}</span>
+            </div>
+        {% elif user.profile.licence_status == 'Pending' %}
+            <div class="alert alert-warning mb-15">
+                <span><i class="fa-solid fa-clock"></i> Licence is in Pending state. You can activate demo verification instantly below.</span>
+            </div>
+        {% endif %}
+
+        <!-- Quick 1-Click Demo Verification Box -->
+        <div class="bg-grad-red border-primary-solid rounded-sm p-15 mb-2">
+            <div class="d-flex align-start justify-between gap-1 flex-wrap">
+                <div>
+                    <h4 class="text-white fs-11 mb-035 d-flex align-center gap-05">
+                        <i class="fa-solid fa-bolt text-warning"></i> 1-Click Instant Demo Verification
+                    </h4>
+                    <p class="text-muted fs-085 mb-1 lh-15">
+                        Real-time external verification blockers have been removed. Click below to instantly generate a verified demo licence (<code class="text-success-light">DL-04-2023-DEMO8888</code>) with full fleet privileges.
+                    </p>
+                </div>
+            </div>
+            <form method="post" action="{% url 'demo_licence_verify' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="activate_valid">
+                <input type="hidden" name="demo_dl_number" value="DL-04-2023-DEMO8888">
+                <button type="submit" class="btn btn-primary fw-bold">
+                    <i class="fa-solid fa-circle-check"></i> Instant 1-Click Demo Verification & Approval
+                </button>
+            </form>
+        </div>
+
+        <div class="pos-relative text-center my-2">
+            <hr class="border-0 border-top-dark">
+            <span class="pos-absolute top-neg-11 left-50 translate-x-neg-50 bg-card px-1 text-muted fs-082 text-uppercase tracking-wide">
+                Or Submit Custom Licence Details
+            </span>
+        </div>
+
+        <!-- Custom Demo Licence Form -->
+        <form method="post" enctype="multipart/form-data" action="{% url 'licence_upload' %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <div class="d-flex justify-between align-center mb-04">
+                    <label class="form-label m-0">Licence Number *</label>
+                    <div class="d-flex gap-04">
+                        <button type="button" class="btn btn-sm btn-dark fs-072 p-badge-sm" onclick="fillDemoDL('DL-04-2023-0012345')">Sample Delhi DL</button>
+                        <button type="button" class="btn btn-sm btn-dark fs-072 p-badge-sm" onclick="fillDemoDL('TN-01-2022-0087654')">Sample Chennai DL</button>
+                    </div>
+                </div>
+                <input type="text" id="licence_number" name="licence_number" value="{{ user.profile.licence_number }}" required class="form-control tracking-sm text-uppercase" placeholder="e.g. DL-04-2023-DEMO8888 or MH-02-2022-1234567">
+                <small class="text-muted fs-sm">Accepts standard Indian DL numbers or custom demo IDs. Verified instantly upon submission.</small>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Issue Date</label>
+                    <input type="date" id="licence_issue_date" name="licence_issue_date" value="{{ user.profile.licence_issue_date|date:'Y-m-d' }}" class="form-control">
+                    <small class="text-muted fs-sm">Defaults to 2 years ago if left blank.</small>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Expiry Date *</label>
+                    <input type="date" id="licence_expiry_date" name="licence_expiry_date" value="{{ user.profile.licence_expiry_date|date:'Y-m-d' }}" class="form-control">
+                    <small class="text-muted fs-sm">Must be a future date (defaults to 5 years from today).</small>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Driving Licence Document / Photo <span class="text-muted fs-08">(Optional for Demo)</span></label>
+                {% if user.profile.licence_image %}
+                    <div class="mb-075 d-flex align-center gap-1">
+                        <img class="w-100px h-60 obj-cover rounded-4 border-dark" src="{{ user.profile.licence_image.url }}" alt="Current Licence">
+                        <span class="fs-085 text-muted">Current document on file.</span>
+                    </div>
+                {% endif %}
+                <input type="file" name="licence_image" accept="image/*,application/pdf" class="form-control">
+                <small class="text-muted fs-sm">Optional. In demo verification mode, any valid submission is approved automatically.</small>
+            </div>
+
+            <div class="bg-black-25 border-dark rounded-sm p-125 my-15">
+                <h5 class="text-white fs-095 mb-06"><i class="fa-solid fa-shield-halved text-primary"></i> Demo Verification Features:</h5>
+                <ul class="text-muted fs-085 lh-17 pl-125 mb-0">
+                    <li><strong>Instant Auto-Approval:</strong> No waiting for external Parivahan APIs or manual staff reviews.</li>
+                    <li><strong>Unblocked Direct Bookings:</strong> Reservations can be made without waiting for KYC approval.</li>
+                    <li><strong>Simulation Sandbox:</strong> Easily test active, expired, and reset states from the status console.</li>
+                </ul>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100">
+                <i class="fa-solid fa-check-double"></i> Submit & Verify in Demo Mode
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function fillDemoDL(dlNum) {
+    document.getElementById('licence_number').value = dlNum;
+    const now = new Date();
+    const issueDate = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+    const expiryDate = new Date(now.getFullYear() + 8, now.getMonth(), now.getDate()).toISOString().split('T')[0];
+    document.getElementById('licence_issue_date').value = issueDate;
+    document.getElementById('licence_expiry_date').value = expiryDate;
+}
+</script>
+{% endblock %}

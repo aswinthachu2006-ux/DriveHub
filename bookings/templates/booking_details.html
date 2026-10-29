@@ -1,0 +1,177 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-950 pt-3">
+    <!-- Top Bar -->
+    <div class="d-flex justify-between align-center mb-2 flex-wrap gap-1">
+        <div>
+            <div class="d-flex align-center gap-075 mb-025">
+                <h1 class="fs-22 fw-extrabold text-white">Booking #{{ booking.booking_id }}</h1>
+                <span class="badge {% if booking.status == 'Confirmed' or booking.status == 'Completed' %}badge-approved{% elif booking.status == 'Cancelled' %}badge-rejected{% else %}badge-warning{% endif %} fs-085">
+                    {{ booking.status }}
+                </span>
+            </div>
+            <p class="text-muted fs-09">Placed on {{ booking.created_at|date:"F d, Y &bull; h:i A" }}</p>
+        </div>
+
+        <div class="d-flex gap-06">
+            <a href="{% url 'booking_history' %}" class="btn btn-sm btn-dark">
+                <i class="fa-solid fa-arrow-left"></i> All Bookings
+            </a>
+            <button onclick="window.print()" class="btn btn-sm btn-outline">
+                <i class="fa-solid fa-print"></i> Print Invoice
+            </button>
+            {% if booking.status == 'Pending' or booking.status == 'Confirmed' %}
+                <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-sm btn-outline-red">
+                    <i class="fa-solid fa-ban"></i> Cancel Booking
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Main Details Grid -->
+    <div class="grid grid-2 gap-2 align-start mb-2">
+        <!-- Left: Car & Itinerary -->
+        <div>
+            <div class="card card-glow p-175 mb-15">
+                <div class="d-flex gap-125 align-center mb-125">
+                    <img class="w-130px h-85 obj-cover rounded-sm" src="{{ booking.car.get_image_url }}" alt="{{ booking.car.name }}" onerror="this.src='/static/images/car-placeholder.svg'">
+                    <div>
+                        <span class="badge {% if booking.car.category == 'Premium' %}badge-premium{% else %}badge-normal{% endif %} mb-03">
+                            {{ booking.car.category }}
+                        </span>
+                        <h3 class="text-white fs-13 mb-02">{{ booking.car.brand }} {{ booking.car.name }}</h3>
+                        <span class="text-muted fs-085">Plate: <code>{{ booking.car.registration_number }}</code></span>
+                    </div>
+                </div>
+
+                <div class="grid grid-2 gap-1 border-top-dark pt-125">
+                    <div>
+                        <span class="text-muted fs-082 d-block">Pickup Schedule:</span>
+                        <strong class="text-white fs-095">{{ booking.start_date|date:"M d, Y" }}</strong>
+                        <div class="text-muted fs-08 mt-02">{{ booking.pickup_location }}</div>
+                    </div>
+                    <div>
+                        <span class="text-muted fs-082 d-block">Return Schedule:</span>
+                        <strong class="text-white fs-095">{{ booking.end_date|date:"M d, Y" }}</strong>
+                        <div class="text-muted fs-08 mt-02">{{ booking.dropoff_location }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Vehicle Inspection Module Status -->
+            <div class="card p-175">
+                <h4 class="text-white fs-115 mb-1 d-flex align-center gap-05">
+                    <i class="fa-solid fa-clipboard-check text-primary"></i> Vehicle Inspection Status
+                </h4>
+
+                <div class="d-flex justify-between align-center py-08 border-bottom-dark">
+                    <div>
+                        <strong class="text-white fs-092 d-block">Pre-Trip Handover Check</strong>
+                        <small class="text-muted">Initial odometer & vehicle state verification</small>
+                    </div>
+                    <a href="{% url 'before_inspection' booking.id %}" class="btn btn-sm btn-outline">
+                        {% if booking.inspection and booking.inspection.before_completed %}
+                            <i class="fa-solid fa-circle-check text-success"></i> View Pre-Check
+                        {% else %}
+                            <i class="fa-solid fa-pen-to-square"></i> Perform / Review
+                        {% endif %}
+                    </a>
+                </div>
+
+                <div class="d-flex justify-between align-center py-08 border-bottom-dark">
+                    <div>
+                        <strong class="text-white fs-092 d-block">Post-Trip Return Check</strong>
+                        <small class="text-muted">Return fuel, mileage, and return condition audit</small>
+                    </div>
+                    <a href="{% url 'after_inspection' booking.id %}" class="btn btn-sm btn-outline">
+                        {% if booking.inspection and booking.inspection.after_completed %}
+                            <i class="fa-solid fa-circle-check text-success"></i> View Post-Check
+                        {% else %}
+                            <i class="fa-solid fa-pen-to-square"></i> Complete Return Check
+                        {% endif %}
+                    </a>
+                </div>
+
+                {% if booking.inspection and booking.inspection.damage_reports.exists %}
+                    <div class="mt-1 p-1 bg-danger-10 border-danger-30 rounded-sm">
+                        <strong class="text-danger fs-09 d-block mb-025">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Damage Reports Logged
+                        </strong>
+                        <p class="text-muted fs-082 mb-05">
+                            Damages were recorded during the vehicle return inspection.
+                        </p>
+                        {% for dmg in booking.inspection.damage_reports.all %}
+                            <div class="d-flex justify-between fs-085 mb-03">
+                                <span class="text-white">{{ dmg.damage_title }}</span>
+                                <a class="text-primary fw-semibold" href="{% url 'damage_details' dmg.id %}">View & Settle &rarr;</a>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Right: Financial Invoice & Renter Credentials -->
+        <div>
+            <!-- Financial Invoice -->
+            <div class="card p-175 mb-15">
+                <h4 class="text-white fs-115 mb-125 pb-075 border-bottom-dark">
+                    <i class="fa-solid fa-receipt text-primary mr-04"></i> Payment & Billing Breakdown
+                </h4>
+
+                <div class="d-flex justify-between py-05 fs-09">
+                    <span class="text-muted">Daily Rate:</span>
+                    <strong class="text-white">₹{{ booking.daily_rate }} / day</strong>
+                </div>
+
+                <div class="d-flex justify-between py-05 fs-09">
+                    <span class="text-muted">Total Duration:</span>
+                    <strong class="text-white">{{ booking.total_days }} Day{{ booking.total_days|pluralize }}</strong>
+                </div>
+
+                <div class="d-flex justify-between py-05 fs-09">
+                    <span class="text-muted">Rental Subtotal:</span>
+                    <strong class="text-white">₹{{ booking.rental_charge }}</strong>
+                </div>
+
+                <div class="d-flex justify-between py-05 fs-09">
+                    <span class="text-muted">Security Deposit:</span>
+                    <strong class="text-white">₹{{ booking.security_deposit }}</strong>
+                </div>
+
+                <div class="d-flex justify-between pt-1 border-top-dark mt-05 fs-115">
+                    <strong class="text-white">Total Rental Cost:</strong>
+                    <strong class="text-primary fs-14">₹{{ booking.total_amount }}</strong>
+                </div>
+
+                <div class="mt-125 p-075 bg-black-30 rounded-sm fs-085">
+                    <div class="d-flex justify-between mb-03">
+                        <span class="text-muted">Payment Status:</span>
+                        <span class="badge {% if booking.payment_status == 'Paid' %}badge-approved{% else %}badge-warning{% endif %}">
+                            {{ booking.payment_status }}
+                        </span>
+                    </div>
+                    {% if booking.payment_method %}
+                        <div class="d-flex justify-between">
+                            <span class="text-muted">Payment Channel:</span>
+                            <span class="text-white">{{ booking.payment_method }}</span>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Driver Identity Box -->
+            <div class="card p-15">
+                <h5 class="text-white fs-1 mb-075">Verified Renter Profile</h5>
+                <p class="text-muted fs-085 lh-16 m-0">
+                    <strong>{{ booking.user.get_full_name|default:booking.user.username }}</strong><br>
+                    Email: {{ booking.user.email }}<br>
+                    Licence No: <code>{{ booking.user.profile.licence_number }}</code><br>
+                    Driver Age: {{ booking.user.profile.age|default:"Verified" }} Years
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

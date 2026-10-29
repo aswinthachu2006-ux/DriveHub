@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-800 pt-3">
+    <!-- Breadcrumb -->
+    <div class="mb-15 d-flex justify-between align-center">
+        <a href="{% url 'booking_details' booking.id %}" class="btn btn-sm btn-dark">
+            <i class="fa-solid fa-arrow-left"></i> Back to Booking Details
+        </a>
+        <a href="{% url 'after_inspection' booking.id %}" class="btn btn-sm btn-outline">
+            Post-Trip Return Inspection <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+
+    <div class="card card-glow p-25 border-top-primary-4">
+        <div class="d-flex justify-between align-center border-bottom-dark pb-15 mb-2 flex-wrap gap-1">
+            <div>
+                <span class="badge badge-premium mb-04">Handover Audit Phase 1</span>
+                <h1 class="text-white fs-2 fw-extrabold">Vehicle Pre-Trip Inspection</h1>
+                <p class="text-muted fs-09">Record initial odometer, fuel gauge, and body status before keys are handed to renter.</p>
+            </div>
+            <div>
+                {% if inspection.before_completed %}
+                    <span class="badge badge-approved fs-095 p-05-1">
+                        <i class="fa-solid fa-circle-check"></i> Pre-Inspection Completed
+                    </span>
+                {% else %}
+                    <span class="badge badge-warning fs-095 p-05-1">
+                        <i class="fa-solid fa-pen-ruler"></i> Inspection Pending
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Vehicle & Booking Reference Box -->
+        <div class="bg-black-30 border-dark rounded-sm p-125 mb-2">
+            <div class="grid grid-3 fs-088">
+                <div>
+                    <span class="text-muted d-block">Vehicle:</span>
+                    <strong class="text-white">{{ car.brand }} {{ car.name }}</strong>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Plate Number:</span>
+                    <code>{{ car.registration_number }}</code>
+                </div>
+                <div>
+                    <span class="text-muted d-block">Renter:</span>
+                    <strong class="text-white">{{ booking.user.get_full_name|default:booking.user.username }}</strong>
+                </div>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'before_inspection' booking.id %}">
+            {% csrf_token %}
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-user-tie text-primary"></i> Inspector Specialist Name</label>
+                    <input type="text" name="inspector_name" value="{{ inspection.inspector_name }}" required class="form-control" {% if inspection.before_completed and not user.is_staff %}readonly{% endif %}>
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-gauge text-primary"></i> Initial Odometer Reading (KM) *</label>
+                    <input type="number" name="before_odometer" value="{{ inspection.before_odometer }}" required class="form-control" placeholder="12450" {% if inspection.before_completed and not user.is_staff %}readonly{% endif %}>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-gas-pump text-primary"></i> Fuel Level on Handover *</label>
+                    <select name="before_fuel_level" class="form-select" {% if inspection.before_completed and not user.is_staff %}disabled{% endif %}>
+                        <option value="100% Full" {% if inspection.before_fuel_level == '100% Full' %}selected{% endif %}>100% Full Tank</option>
+                        <option value="75%" {% if inspection.before_fuel_level == '75%' %}selected{% endif %}>75% Tank</option>
+                        <option value="50%" {% if inspection.before_fuel_level == '50%' %}selected{% endif %}>50% Tank</option>
+                        <option value="25%" {% if inspection.before_fuel_level == '25%' %}selected{% endif %}>25% Tank</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label"><i class="fa-solid fa-car-side text-primary"></i> Exterior Body Condition *</label>
+                    <select name="before_exterior_condition" class="form-select" {% if inspection.before_completed and not user.is_staff %}disabled{% endif %}>
+                        <option value="Pristine / Excellent" {% if inspection.before_exterior_condition == 'Pristine / Excellent' %}selected{% endif %}>Pristine / Excellent (No marks)</option>
+                        <option value="Good / Clean" {% if inspection.before_exterior_condition == 'Good / Clean' %}selected{% endif %}>Good / Clean</option>
+                        <option value="Minor Wear & Tear" {% if inspection.before_exterior_condition == 'Minor Wear & Tear' %}selected{% endif %}>Minor Wear & Tear (Noted)</option>
+                        <option value="Scratches / Blemishes" {% if inspection.before_exterior_condition == 'Scratches / Blemishes' %}selected{% endif %}>Scratches / Blemishes</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Pre-Handover Checklist -->
+            <div class="checklist-card my-15">
+                <h4 class="text-white fs-105 mb-075"><i class="fa-solid fa-list-check text-primary"></i> Safety & Asset Checklist</h4>
+                
+                <div class="checklist-item">
+                    <span>Interior Vacuumed, Sanitized & Dust-Free</span>
+                    <input class="accent-primary scale-13" type="checkbox" name="before_interior_clean" {% if inspection.before_interior_clean %}checked{% endif %} {% if inspection.before_completed and not user.is_staff %}disabled{% endif %}>
+                </div>
+
+                <div class="checklist-item">
+                    <span>Spare Wheel, Jack & Tool Set Present in Trunk</span>
+                    <input class="accent-primary scale-13" type="checkbox" name="before_spare_tire_toolkit" {% if inspection.before_spare_tire_toolkit %}checked{% endif %} {% if inspection.before_completed and not user.is_staff %}disabled{% endif %}>
+                </div>
+
+                <div class="checklist-item">
+                    <span>Headlights, High Beams, AC & Electronics Verified</span>
+                    <input class="accent-primary scale-13" type="checkbox" name="before_lights_electronics" {% if inspection.before_lights_electronics %}checked{% endif %} {% if inspection.before_completed and not user.is_staff %}disabled{% endif %}>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fa-solid fa-clipboard text-primary"></i> Pre-Handover Remarks & Condition Notes</label>
+                <textarea name="before_notes" class="form-control" rows="3" placeholder="Note any existing superficial marks or customer requests..." {% if inspection.before_completed and not user.is_staff %}readonly{% endif %}>{{ inspection.before_notes }}</textarea>
+            </div>
+
+            {% if not inspection.before_completed or user.is_staff %}
+                <button type="submit" class="btn btn-primary btn-lg w-100 mt-1">
+                    <i class="fa-solid fa-signature"></i> Save & Sign-Off Pre-Trip Inspection
+                </button>
+            {% else %}
+                <div class="text-center text-muted fs-09 p-1">
+                    Inspection completed on {{ inspection.before_inspection_date|date:"F d, Y &bull; h:i A" }}.
+                </div>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

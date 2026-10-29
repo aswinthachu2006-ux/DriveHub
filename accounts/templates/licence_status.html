@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-780 pt-3">
+    <!-- Breadcrumb -->
+    <div class="mb-15 d-flex justify-between align-center">
+        <a href="{% url 'dashboard' %}" class="btn btn-sm btn-dark"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</a>
+        <span class="badge badge-premium"><i class="fa-solid fa-flask"></i> Demo Verification Active</span>
+    </div>
+
+    <div class="card card-glow p-25 border-top-primary-4">
+        <div class="d-flex justify-between align-center border-bottom-dark pb-15 mb-2">
+            <div>
+                <span class="fs-085 text-primary fw-bold text-uppercase tracking-wide">Compliance & Identity</span>
+                <h1 class="fs-2 fw-extrabold text-white mt-025">Driving Licence Status</h1>
+            </div>
+            <div>
+                {% if profile.licence_status == 'Approved' %}
+                    <span class="badge badge-approved fs-095 p-05-125">
+                        <i class="fa-solid fa-circle-check"></i> Demo Verified & Approved
+                    </span>
+                {% elif profile.licence_status == 'Pending' %}
+                    <span class="badge badge-pending fs-095 p-05-125">
+                        <i class="fa-solid fa-clock"></i> Pending (Simulated)
+                    </span>
+                {% elif profile.licence_status == 'Rejected' %}
+                    <span class="badge badge-rejected fs-095 p-05-125">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Verification Rejected
+                    </span>
+                {% else %}
+                    <span class="badge badge-normal fs-095 p-05-125">
+                        <i class="fa-solid fa-file-excel"></i> Not Uploaded
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Verification Summary Grid -->
+        <div class="grid grid-2 gap-2 mb-2">
+            <!-- Document Details -->
+            <div class="bg-black-30 border-dark rounded-sm p-15">
+                <h4 class="text-white fs-11 mb-125 d-flex align-center gap-05">
+                    <i class="fa-solid fa-id-card text-primary"></i> Licence Credentials
+                </h4>
+                
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Licence Holder</span>
+                    <strong class="text-white fs-1">{{ profile.user.get_full_name|default:profile.user.username }}</strong>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Licence Number</span>
+                    <code class="text-white fs-095 tracking-sm">{{ profile.licence_number|default:"Not Provided" }}</code>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Verification Mode</span>
+                    <span class="badge badge-premium fs-sm"><i class="fa-solid fa-bolt"></i> Demo Licence Verification</span>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Vehicle Authorization</span>
+                    <span class="badge badge-normal fs-sm">LMV (Light Motor Vehicle - Cars)</span>
+                </div>
+
+                <div class="mb-1">
+                    <span class="text-muted fs-082 d-block">Expiry Date</span>
+                    <strong class="{% if profile.licence_expiry_date and not profile.is_licence_valid %}text-danger{% else %}text-white{% endif %}">
+                        {{ profile.licence_expiry_date|default:"Not Set" }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span class="text-muted fs-082 d-block">Driver Age (Calculated)</span>
+                    <strong class="text-white">{{ profile.age|default:"Unknown" }} Years</strong>
+                </div>
+            </div>
+
+            <!-- Licence Document Preview -->
+            <div class="bg-black-30 border-dark rounded-sm p-15 d-flex flex-column align-center justify-center text-center">
+                <h4 class="text-white fs-11 mb-1 align-self-start">
+                    <i class="fa-solid fa-image text-primary"></i> Submitted Document
+                </h4>
+                
+                {% if profile.licence_image %}
+                    <img class="max-h-170 rounded-sm border-dark obj-contain mb-075" src="{{ profile.licence_image.url }}" alt="Licence Document">
+                    <span class="fs-08 text-muted">Uploaded on {{ profile.uploaded_at|date:"M d, Y" }}</span>
+                {% else %}
+                    <div class="py-25-px-1 text-muted">
+                        <i class="fa-solid fa-id-card-clip fs-3 text-dark mb-075 d-block"></i>
+                        <span class="fs-088">{% if profile.licence_status == 'Approved' %}Verified via 1-Click Demo Verification{% else %}No physical document uploaded yet.{% endif %}</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if profile.rejection_reason and profile.licence_status == 'Rejected' %}
+            <div class="alert alert-danger mb-2">
+                <div>
+                    <strong class="d-block mb-025"><i class="fa-solid fa-triangle-exclamation"></i> Rejection Feedback:</strong>
+                    {{ profile.rejection_reason }}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Eligibility Matrix -->
+        <div class="bg-primary-05 border-primary-20 rounded-sm p-15 mb-2">
+            <h4 class="text-white fs-105 mb-075"><i class="fa-solid fa-traffic-light text-primary"></i> Vehicle Fleet Eligibility Status:</h4>
+            
+            <div class="grid grid-2 gap-1">
+                <div class="p-08 bg-black-40 rounded-4">
+                    <div class="d-flex justify-between align-center mb-03">
+                        <strong class="text-white fs-09">Normal Fleet (Age 21+)</strong>
+                        {% if profile.licence_status == 'Approved' and profile.age and profile.age >= 21 %}
+                            <span class="badge badge-approved fs-xs">Eligible</span>
+                        {% else %}
+                            <span class="badge badge-rejected fs-xs">Locked</span>
+                        {% endif %}
+                    </div>
+                    <p class="fs-sm text-muted m-0">Requires approved licence and age &ge; 21.</p>
+                </div>
+
+                <div class="p-08 bg-black-40 rounded-4">
+                    <div class="d-flex justify-between align-center mb-03">
+                        <strong class="text-white fs-09">Premium Fleet (Age 25+)</strong>
+                        {% if profile.licence_status == 'Approved' and profile.age and profile.age >= 25 %}
+                            <span class="badge badge-approved fs-xs">Eligible</span>
+                        {% else %}
+                            <span class="badge badge-rejected fs-xs">Locked</span>
+                        {% endif %}
+                    </div>
+                    <p class="fs-sm text-muted m-0">Requires approved licence and age &ge; 25.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Navigation Buttons -->
+        <div class="d-flex gap-1 flex-wrap mb-2">
+            <a href="{% url 'licence_upload' %}" class="btn btn-primary flex-1">
+                <i class="fa-solid fa-cloud-arrow-up"></i> {% if profile.licence_image or profile.licence_status == 'Approved' %}Update / Re-submit Licence{% else %}Submit Custom Licence{% endif %}
+            </a>
+            {% if profile.licence_status == 'Approved' %}
+                <a href="{% url 'normal_cars' %}" class="btn btn-outline flex-1">
+                    <i class="fa-solid fa-car"></i> Rent a Car Now
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- Interactive Demo Licence Verification Sandbox -->
+        <div class="p-15 border-dashed-red rounded-sm bg-black-45">
+            <div class="d-flex justify-between align-center mb-1 flex-wrap gap-05">
+                <div class="fs-095 text-white fw-bold">
+                    <i class="fa-solid fa-vial-circle-check text-primary"></i> Demo Licence Verification Simulator:
+                </div>
+                <span class="fs-sm text-muted">Real-time verification blockers removed</span>
+            </div>
+            <div class="d-flex gap-06 flex-wrap">
+                <form method="post" action="{% url 'demo_licence_verify' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="activate_valid">
+                    <button type="submit" class="btn btn-sm btn-success">
+                        <i class="fa-solid fa-bolt"></i> 1-Click Demo Verify (Instant Approval)
+                    </button>
+                </form>
+                <form method="post" action="{% url 'demo_licence_verify' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="simulate_expired">
+                    <button type="submit" class="btn btn-sm btn-dark text-danger">
+                        <i class="fa-solid fa-calendar-xmark"></i> Simulate Expired DL
+                    </button>
+                </form>
+                <form method="post" action="{% url 'demo_licence_verify' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="simulate_pending">
+                    <button type="submit" class="btn btn-sm btn-dark text-warning">
+                        <i class="fa-solid fa-hourglass-half"></i> Simulate Pending
+                    </button>
+                </form>
+                <form method="post" action="{% url 'demo_licence_verify' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="reset">
+                    <button type="submit" class="btn btn-sm btn-dark">
+                        <i class="fa-solid fa-rotate-left"></i> Reset Status
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

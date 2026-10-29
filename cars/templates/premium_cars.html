@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container pt-25">
+    <!-- Header -->
+    <div class="d-flex justify-between align-end mb-25 flex-wrap gap-1">
+        <div>
+            <span class="badge badge-premium mb-05"><i class="fa-solid fa-gem"></i> Flagship Luxury & Performance</span>
+            <h1 class="fs-25 fw-extrabold text-white">Premium Cars Fleet</h1>
+            <p class="text-muted fs-1">
+                Experience unrivaled exhilaration, German precision, and executive luxury. Minimum driver age: 25 years with verified licence.
+            </p>
+        </div>
+        <div>
+            <a href="{% url 'normal_cars' %}" class="btn btn-outline">
+                <i class="fa-solid fa-arrow-left"></i> View Normal Cars
+            </a>
+        </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="card card-glow p-125 mb-25 border-red-40">
+        <form class="d-flex gap-1 flex-wrap align-end" method="get">
+            <div class="flex-2 min-w-200">
+                <label class="form-label fs-08">Filter Premium Brand</label>
+                <input type="text" name="q" value="{{ request.GET.q }}" placeholder="BMW, Mercedes-Benz, Audi, Tesla..." class="form-control">
+            </div>
+
+            <div class="flex-1 min-w-140">
+                <label class="form-label fs-08">Transmission</label>
+                <select name="transmission" class="form-select">
+                    <option value="">All</option>
+                    <option value="Automatic" {% if request.GET.transmission == 'Automatic' %}selected{% endif %}>Automatic</option>
+                    <option value="Manual" {% if request.GET.transmission == 'Manual' %}selected{% endif %}>Manual</option>
+                </select>
+            </div>
+
+            <div class="flex-1 min-w-140">
+                <label class="form-label fs-08">Fuel / Powertrain</label>
+                <select name="fuel" class="form-select">
+                    <option value="">All</option>
+                    <option value="Petrol" {% if request.GET.fuel == 'Petrol' %}selected{% endif %}>Petrol (Twin-Turbo)</option>
+                    <option value="Electric" {% if request.GET.fuel == 'Electric' %}selected{% endif %}>Electric (EV)</option>
+                    <option value="Hybrid" {% if request.GET.fuel == 'Hybrid' %}selected{% endif %}>Hybrid</option>
+                    <option value="Diesel" {% if request.GET.fuel == 'Diesel' %}selected{% endif %}>Diesel</option>
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" class="btn btn-primary h-44">
+                    <i class="fa-solid fa-filter"></i> Filter Premium
+                </button>
+            </div>
+            
+            {% if request.GET.q or request.GET.transmission or request.GET.fuel %}
+                <div>
+                    <a href="{% url 'premium_cars' %}" class="btn btn-dark h-44">Reset</a>
+                </div>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- Car List -->
+    {% if cars %}
+        <div class="grid grid-3">
+            {% for car in cars %}
+                <div class="card car-card card-glow">
+                    <div class="car-card-img-wrap">
+                        <div class="car-card-tag">
+                            <span class="badge badge-premium"><i class="fa-solid fa-star"></i> Luxury VIP</span>
+                        </div>
+                        <div class="car-card-price-tag border-primary">
+                            <span>₹{{ car.daily_rental_price }}</span> <small class="text-muted fs-sm">/day</small>
+                        </div>
+                        <img src="{{ car.get_image_url }}" alt="{{ car.name }}" onerror="this.src='/static/images/car-placeholder.svg'">
+                    </div>
+
+                    <div class="car-card-content">
+                        <div class="d-flex justify-between align-baseline">
+                            <span class="fs-08 text-primary fw-bold text-uppercase">{{ car.brand }} &bull; {{ car.model_year }}</span>
+                            {% if car.status == 'Available' %}
+                                <span class="badge badge-approved fs-xs">Available</span>
+                            {% else %}
+                                <span class="badge badge-warning fs-xs">{{ car.status }}</span>
+                            {% endif %}
+                        </div>
+
+                        <h3 class="car-card-title">{{ car.name }}</h3>
+
+                        <div class="car-specs-row">
+                            <span class="spec-pill"><i class="fa-solid fa-bolt text-primary"></i> {{ car.transmission }}</span>
+                            <span class="spec-pill"><i class="fa-solid fa-gas-pump"></i> {{ car.fuel_type }}</span>
+                            <span class="spec-pill"><i class="fa-solid fa-users"></i> {{ car.seating_capacity }} Seats</span>
+                            <span class="spec-pill text-primary border-red-40"><i class="fa-solid fa-circle-exclamation"></i> Min Age: 25+</span>
+                        </div>
+
+                        <p class="text-muted fs-086 mb-125 lh-15 flex-1">
+                            {{ car.description|truncatewords:16 }}
+                        </p>
+
+                        <div class="d-flex gap-075 mt-auto">
+                            <a href="{% url 'car_details' car.id %}" class="btn btn-outline flex-1">
+                                Specs & Details
+                            </a>
+                            <a href="{% url 'booking' car.id %}" class="btn btn-primary flex-1">
+                                <i class="fa-solid fa-key"></i> Book VIP
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="card p-3 text-center">
+            <i class="fa-solid fa-car-side fs-3 text-dark mb-1"></i>
+            <h3>No premium vehicles found matching your criteria.</h3>
+            <p class="text-muted mb-15">Try resetting your filters or check our standard vehicles.</p>
+            <a href="{% url 'premium_cars' %}" class="btn btn-primary">Reset Filters</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

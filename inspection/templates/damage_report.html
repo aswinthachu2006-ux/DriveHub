@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-700 pt-3">
+    <!-- Breadcrumb -->
+    <div class="mb-15">
+        <a href="{% url 'after_inspection' inspection.booking.id %}" class="btn btn-sm btn-dark">
+            <i class="fa-solid fa-arrow-left"></i> Back to Return Inspection
+        </a>
+    </div>
+
+    <div class="card card-glow p-25 border-top-danger-4">
+        <div class="mb-2 border-bottom-dark pb-125">
+            <span class="badge badge-rejected mb-04"><i class="fa-solid fa-triangle-exclamation"></i> Damage Logging</span>
+            <h1 class="text-white fs-2 fw-extrabold">Vehicle Damage Report</h1>
+            <p class="text-muted fs-09">Record post-trip damage assessment for Booking <code>#{{ inspection.booking.booking_id }}</code> ({{ inspection.car.name }}).</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" action="{% url 'damage_report' inspection.id %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Damage Title / Incident Summary *</label>
+                <input type="text" name="damage_title" required class="form-control" placeholder="e.g. Scuffed passenger rear bumper corner">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Damage Classification *</label>
+                    <select name="damage_type" class="form-select">
+                        <option value="Exterior Scratch">Exterior Scratch / Paint Scrape</option>
+                        <option value="Body Dent / Bumper Damage">Body Dent / Bumper Impact</option>
+                        <option value="Glass / Windshield / Mirror Crack">Glass / Windshield / Mirror Crack</option>
+                        <option value="Wheel / Rim Scuff or Tire Puncture">Wheel / Rim Scuff or Tire Puncture</option>
+                        <option value="Interior Upholstery Stain / Tear">Interior Upholstery Stain / Tear</option>
+                        <option value="Mechanical / Electrical Defect">Mechanical / Electrical Defect</option>
+                        <option value="Other Penalty">Other Penalty</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Severity Level *</label>
+                    <select name="severity" class="form-select">
+                        <option value="Minor">Minor (Light surface mark / buffing)</option>
+                        <option value="Moderate">Moderate (Requires panel repair / spot paint)</option>
+                        <option value="Severe">Severe (Requires parts replacement)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Estimated Repair Assessment (₹) *</label>
+                    <input type="number" step="0.01" name="estimated_cost" required class="form-control" placeholder="2500.00" value="2500.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Damage Photographic Evidence (Photo)</label>
+                    <input type="file" name="damage_image" accept="image/*" class="form-control">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Detailed Damage Description & Location *</label>
+                <textarea name="description" required class="form-control" rows="4" placeholder="Detail the exact location on the vehicle, length/depth of scratch or dent, and apparent cause..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-1 bg-danger">
+                <i class="fa-solid fa-file-shield"></i> Save & File Damage Report
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

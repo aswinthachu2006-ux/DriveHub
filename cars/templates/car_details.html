@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container pt-25">
+    <!-- Breadcrumb & Back -->
+    <div class="d-flex align-center justify-between mb-15">
+        <div class="fs-09 text-muted">
+            <a href="{% url 'home' %}">Home</a> &gt; 
+            <a href="{% if car.category == 'Premium' %}{% url 'premium_cars' %}{% else %}{% url 'normal_cars' %}{% endif %}">{{ car.category }} Cars</a> &gt; 
+            <span class="text-white">{{ car.name }}</span>
+        </div>
+        <a href="javascript:history.back()" class="btn btn-sm btn-dark">
+            <i class="fa-solid fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- Main Car Grid -->
+    <div class="grid grid-2 gap-25 align-start">
+        <!-- Left: Image & Specs -->
+        <div>
+            <div class="card card-glow overflow-hidden mb-2">
+                <div class="pos-relative w-100 h-380px bg-dark-900">
+                    <img class="w-100 h-100 obj-cover" src="{{ car.get_image_url }}" alt="{{ car.name }}" onerror="this.src='/static/images/car-placeholder.svg'">
+                    <div class="pos-absolute top-125 left-125">
+                        {% if car.category == 'Premium' %}
+                            <span class="badge badge-premium fs-085 p-btn-sm"><i class="fa-solid fa-gem"></i> Premium Elite</span>
+                        {% else %}
+                            <span class="badge badge-normal fs-085 p-btn-sm"><i class="fa-solid fa-car"></i> Normal Fleet</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="pos-absolute bottom-125 right-125 bg-black-90 blur-8 p-05-1 rounded-sm border-dark">
+                        <span class="fs-14 fw-extrabold text-primary">₹{{ car.daily_rental_price }}</span>
+                        <span class="text-muted fs-085"> / day</span>
+                    </div>
+                </div>
+
+                <div class="p-15">
+                    <div class="d-flex justify-between align-center mb-1">
+                        <h2 class="fs-18 text-white fw-extrabold">{{ car.brand }} {{ car.name }}</h2>
+                        <span class="badge {% if car.status == 'Available' %}badge-approved{% else %}badge-warning{% endif %}">
+                            {{ car.status }}
+                        </span>
+                    </div>
+                    
+                    <p class="text-muted fs-095 lh-17 mb-15">
+                        {{ car.description }}
+                    </p>
+
+                    <h4 class="text-white fs-11 mb-08">Vehicle Highlights & Features</h4>
+                    <div class="d-flex flex-wrap gap-06 mb-15">
+                        {% for feature in car.get_features_list %}
+                            <span class="spec-pill border-red-35 text-white">
+                                <i class="fa-solid fa-check text-primary"></i> {{ feature }}
+                            </span>
+                        {% empty %}
+                            <span class="spec-pill"><i class="fa-solid fa-check text-primary"></i> GPS Navigation</span>
+                            <span class="spec-pill"><i class="fa-solid fa-check text-primary"></i> Bluetooth Audio</span>
+                            <span class="spec-pill"><i class="fa-solid fa-check text-primary"></i> Reverse Camera</span>
+                            <span class="spec-pill"><i class="fa-solid fa-check text-primary"></i> Cruise Control</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Technical Specifications Table -->
+            <div class="card p-15">
+                <h4 class="text-white fs-11 mb-1 d-flex align-center gap-05">
+                    <i class="fa-solid fa-microchip text-primary"></i> Technical Specifications
+                </h4>
+                <div class="table-responsive">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Registration Plate</th>
+                                <td><code>{{ car.registration_number }}</code></td>
+                            </tr>
+                            <tr>
+                                <th>Model Year</th>
+                                <td>{{ car.model_year }}</td>
+                            </tr>
+                            <tr>
+                                <th>Transmission</th>
+                                <td>{{ car.transmission }}</td>
+                            </tr>
+                            <tr>
+                                <th>Fuel Type</th>
+                                <td>{{ car.fuel_type }}</td>
+                            </tr>
+                            <tr>
+                                <th>Seating Capacity</th>
+                                <td>{{ car.seating_capacity }} Passengers</td>
+                            </tr>
+                            <tr>
+                                <th>Fuel Economy / Mileage</th>
+                                <td>{{ car.mileage }}</td>
+                            </tr>
+                            <tr>
+                                <th>Minimum Age Requirement</th>
+                                <td><strong class="text-primary">{{ car.minimum_age }} Years</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Reserve Car Widget -->
+        <div>
+            <!-- Booking Card -->
+            <div class="card card-glow p-175 mb-15 border-top-primary-4">
+                <div class="d-flex justify-between align-center mb-1">
+                    <h3 class="text-white fs-13 m-0 d-flex align-center gap-06">
+                        <i class="fa-solid fa-key text-primary"></i> Reserve This Vehicle
+                    </h3>
+                    <span class="badge {% if car.status == 'Available' %}badge-approved{% else %}badge-warning{% endif %}">
+                        {{ car.status }}
+                    </span>
+                </div>
+
+                <div class="bg-black-30 p-125 rounded-sm border-dark mb-15">
+                    <div class="d-flex justify-between mb-05 fs-09">
+                        <span class="text-muted">Vehicle Category:</span>
+                        <strong class="text-white">{{ car.category }} Fleet</strong>
+                    </div>
+                    <div class="d-flex justify-between mb-05 fs-09">
+                        <span class="text-muted">Daily Rate:</span>
+                        <strong class="text-primary">₹{{ car.daily_rental_price }} / day</strong>
+                    </div>
+                    <div class="d-flex justify-between fs-09">
+                        <span class="text-muted">Driver Age Guideline:</span>
+                        <strong class="text-white">{{ car.minimum_age }}+ Years</strong>
+                    </div>
+                </div>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'booking' car.id %}" class="btn btn-primary btn-lg w-100">
+                        <i class="fa-solid fa-calendar-check"></i> Book This Car Now &rarr;
+                    </a>
+                {% else %}
+                    <p class="text-muted fs-092 mb-15">
+                        Sign in to reserve this car online. Transparent daily pricing with instant booking confirmation.
+                    </p>
+                    <div class="d-flex gap-08">
+                        <a href="{% url 'login' %}?next={% url 'car_details' car.id %}" class="btn btn-primary flex-1">
+                            <i class="fa-solid fa-right-to-bracket"></i> Login to Book
+                        </a>
+                        <a href="{% url 'signup' %}" class="btn btn-outline flex-1">
+                            Register
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Instant Pricing Breakdown Card -->
+            <div class="card p-175">
+                <h4 class="text-white fs-115 mb-125 d-flex align-center gap-05">
+                    <i class="fa-solid fa-calculator text-primary"></i> Transparent Pricing
+                </h4>
+
+                <div class="d-flex justify-between py-075 border-bottom-dark">
+                    <span class="text-muted">Daily Rental Rate</span>
+                    <strong class="text-white">₹{{ car.daily_rental_price }} / day</strong>
+                </div>
+
+                <div class="d-flex justify-between py-075 border-bottom-dark">
+                    <span class="text-muted">Refundable Security Deposit</span>
+                    <strong class="text-white">₹150.00</strong>
+                </div>
+
+                <div class="d-flex justify-between py-075 border-bottom-dark">
+                    <span class="text-muted">Comprehensive Insurance</span>
+                    <strong class="text-success">Included</strong>
+                </div>
+
+                <div class="d-flex justify-between py-075 border-bottom-dark">
+                    <span class="text-muted">Handover & Return Inspection</span>
+                    <strong class="text-success">Complimentary</strong>
+                </div>
+
+                <div class="mt-15 bg-primary-08 border-primary-20 rounded-sm p-1 text-center">
+                    <span class="text-muted fs-085">Starting estimated total for 3 days:</span>
+                    <div class="fs-16 fw-extrabold text-primary mt-025">
+                        ₹{{ car.daily_rental_price|floatformat:0 }} &times; 3 + ₹150 = ₹{{ car.daily_rental_price|add:car.daily_rental_price|add:car.daily_rental_price|add:150 }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container max-w-650 pt-35">
+    <!-- Breadcrumb -->
+    <div class="mb-15">
+        <a href="{% url 'damage_details' damage.id %}" class="btn btn-sm btn-dark">
+            <i class="fa-solid fa-arrow-left"></i> Back to Incident Details
+        </a>
+    </div>
+
+    <div class="card card-glow p-25 border-top-danger-4">
+        <div class="text-center mb-2">
+            <div class="w-60 h-60 bg-danger-15 rounded-circle d-flex align-center justify-center m-auto-b1 text-danger fs-18">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+            <h2 class="text-white fs-19 fw-extrabold">Settle Damage Claim</h2>
+            <p class="text-muted fs-09">Booking #{{ damage.inspection.booking.booking_id }} &bull; {{ damage.inspection.car.name }}</p>
+        </div>
+
+        <!-- Damage Cost Callout -->
+        <div class="bg-black-30 border-dark rounded-sm p-125 mb-2">
+            <div class="d-flex justify-between mb-05 fs-09">
+                <span class="text-muted">Damage Item:</span>
+                <strong class="text-white">{{ damage.damage_title }}</strong>
+            </div>
+            <div class="d-flex justify-between mb-05 fs-09">
+                <span class="text-muted">Classification:</span>
+                <span class="text-white">{{ damage.damage_type }} ({{ damage.severity }})</span>
+            </div>
+            <div class="d-flex justify-between fs-115 border-top-dashed pt-075 mt-05">
+                <strong class="text-white">Settlement Amount Due:</strong>
+                <strong class="text-primary fs-15">₹{{ damage.estimated_cost }}</strong>
+            </div>
+        </div>
+
+        <form method="post" action="{% url 'damage_payment' damage.id %}">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label class="form-label">Payment Channel</label>
+                <select name="payment_method" class="form-select">
+                    <option value="Credit/Debit Card">Credit / Debit Card</option>
+                    <option value="Deduct from Security Deposit">Deduct from Rental Security Deposit</option>
+                    <option value="UPI / QR Instant Pay">UPI / QR Instant Pay</option>
+                    <option value="Cash at Hub">Cash Settlement at Hub</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Card / Account Reference</label>
+                <input type="text" name="card_number" value="4532 &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 8920" class="form-control">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg w-100 mt-1 bg-danger">
+                <i class="fa-solid fa-lock"></i> Authorize & Pay ₹{{ damage.estimated_cost }}
+            </button>
+        </form>
+
+        <p class="text-dark fs-08 text-center mt-125">
+            Once settled, the inspection report will be updated to Completed and any remaining security deposit will be released immediately.
+        </p>
+    </div>
+</div>
+{% endblock %}
