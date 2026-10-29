@@ -4,12 +4,14 @@ Django settings for DriveHub project.
 
 from pathlib import Path
 import os
+import secrets
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-drivehub-secret-key-automotive-luxury-blue-white'
+# Set DJANGO_SECRET_KEY in the environment for deployments. The random fallback
+# keeps local development usable without publishing a reusable key.
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or secrets.token_urlsafe(50)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
