@@ -9,14 +9,27 @@ import secrets
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Set DJANGO_SECRET_KEY in the environment for deployments. The random fallback
-# keeps local development usable without publishing a reusable key.
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY') or secrets.token_urlsafe(50)
+# Set SECRET_KEY in the WSGI environment on PythonAnywhere. The fallback keeps
+# local development usable without publishing a reusable key.
+SECRET_KEY = (
+    os.environ.get('SECRET_KEY')
+    or os.environ.get('DJANGO_SECRET_KEY')
+    or secrets.token_urlsafe(50)
+)
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Production defaults are safe; set DEBUG=True explicitly for local development.
+DEBUG = os.environ.get('DEBUG', 'False').lower() in {'1', 'true', 'yes', 'on'}
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+    if host.strip()
+]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', '').split(',')
+    if origin.strip()
+]
 
 # Application definition
 INSTALLED_APPS = [

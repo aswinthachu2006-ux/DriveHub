@@ -11,6 +11,7 @@ db.sqlite3
 
 # User uploads can contain identity documents and personal photos
 media/
+staticfiles/
 
 # Local environments and tooling
 .venv/
