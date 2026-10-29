@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 <!-- Hero Section -->
@@ -83,7 +84,10 @@
             <a href="{% url 'premium_cars' %}" class="btn btn-sm btn-outline-red">Premium Cars</a>
         </div>
     </div>
+
+    {% if cars %}
         <div class="grid grid-3">
+            {% for car in cars %}
                 <div class="card car-card {% if car.category == 'Premium' %}card-glow{% endif %}">
                     <div class="car-card-img-wrap">
                         <div class="car-card-tag">
@@ -93,14 +97,11 @@
                                 <span class="badge badge-normal"><i class="fa-solid fa-car"></i> Normal</span>
                             {% endif %}
                         </div>
-
                         <div class="car-card-price-tag">
                             <span>₹{{ car.daily_rental_price }}</span> <small class="text-muted fs-sm">/day</small>
                         </div>
-
                         <img src="{{ car.get_image_url }}" alt="{{ car.name }}" onerror="this.src='/static/images/car-placeholder.svg'">
                     </div>
-
                     <div class="car-card-content">
                         <div class="d-flex justify-between align-baseline">
                             <span class="fs-08 text-muted fw-semibold text-uppercase">{{ car.brand }} &bull; {{ car.model_year }}</span>
@@ -110,41 +111,50 @@
                                 <span class="badge badge-warning fs-xs">{{ car.status }}</span>
                             {% endif %}
                         </div>
-
                         <h3 class="car-card-title">{{ car.name }}</h3>
-
                         <div class="car-specs-row">
                             <span class="spec-pill"><i class="fa-solid fa-gear"></i> {{ car.transmission }}</span>
                             <span class="spec-pill"><i class="fa-solid fa-gas-pump"></i> {{ car.fuel_type }}</span>
                             <span class="spec-pill"><i class="fa-solid fa-users"></i> {{ car.seating_capacity }} Seats</span>
                             <span class="spec-pill"><i class="fa-solid fa-id-badge"></i> Min Age: {{ car.minimum_age }}+</span>
                         </div>
-
-                        <p class="text-muted fs-086 mb-125 lh-15 flex-1">
-                            {{ car.description|truncatewords:16 }}
-                        </p>
-
+                        <p class="text-muted fs-086 mb-125 lh-15 flex-1">{{ car.description|truncatewords:16 }}</p>
                         <div class="d-flex gap-075 mt-auto">
-                            {% if car.id %}
-                         <a href="{% url 'car_details' car.id %}" class="btn btn-outline flex-1">
-                          Details
-                        </a>
-                           {% endif %}
-                           {% if car.id %}
-                            <a href="{% url 'booking' car.id %}" class="btn btn-primary flex-1">
-                                Book Now
-                           {% endif %}
-                            </a>
+                            <a href="{% url 'car_details' car.id %}" class="btn btn-outline flex-1">Details</a>
+                            <a href="{% url 'booking' car.id %}" class="btn btn-primary flex-1">Book Now</a>
                         </div>
                     </div>
                 </div>
+            {% endfor %}
         </div>
+    {% else %}
         <div class="card p-3 text-center">
             <i class="fa-solid fa-car-side fs-3 text-dark mb-1"></i>
-            <h3>No vehicles found matching your criteria.</h3>
-            <p class="text-muted mb-15">Try adjusting your search filters or browse all cars.</p>
-            <a href="{% url 'home' %}" class="btn btn-primary">Clear Filters</a>
+            <h3>No vehicles are listed for booking yet.</h3>
+            <p class="text-muted mb-0">Browse the gallery below. Add vehicle details in the admin to make cars available to rent.</p>
         </div>
+    {% endif %}
+</section>
+
+<!-- Vehicle Photo Gallery -->
+<section class="container pt-35">
+    <div class="mb-2">
+        <span class="text-primary fw-bold text-uppercase fs-085 tracking-wide">DriveHub Showcase</span>
+        <h2 class="fs-2 fw-extrabold text-white">Vehicle Gallery</h2>
+        <p class="text-muted">A preview of the vehicles featured in DriveHub.</p>
+    </div>
+    <div class="grid grid-3">
+        {% for item in fleet_gallery %}
+            <article class="card car-card">
+                <div class="car-card-img-wrap">
+                    <img src="{% static 'images/' %}{{ item.image }}" alt="{{ item.name }} vehicle photo" loading="lazy">
+                </div>
+                <div class="car-card-content">
+                    <h3 class="car-card-title">{{ item.name }}</h3>
+                </div>
+            </article>
+        {% endfor %}
+    </div>
 </section>
 
 <!-- How It Works Section -->

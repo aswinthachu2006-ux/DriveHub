@@ -4,6 +4,21 @@ from cars.models import Car
 from .models import ContactMessage
 from django.db.models import Q
 
+FLEET_GALLERY = [
+    {'name': 'Aston Martin', 'image': 'astin martin.jpg'},
+    {'name': 'Maruti Suzuki Baleno', 'image': 'baleno.jpg'},
+    {'name': 'Mercedes-Benz', 'image': 'benz.jpg'},
+    {'name': 'BMW', 'image': 'bmw.jpg'},
+    {'name': 'Hyundai Creta', 'image': 'creta.jpg'},
+    {'name': 'Land Rover Defender', 'image': 'defander.jpg'},
+    {'name': 'Maruti Suzuki Ertiga', 'image': 'eartiga.jpg'},
+    {'name': 'Toyota Innova', 'image': 'innova2.jpg'},
+    {'name': 'Lamborghini', 'image': 'lamborghini.jpg'},
+    {'name': 'Lexus', 'image': 'lexus.jpg'},
+    {'name': 'Tata Safari', 'image': 'safari.jpg'},
+    {'name': 'Maruti Suzuki Swift', 'image': 'swift.jpg'},
+]
+
 def home(request):
     cars = Car.objects.all()
     category = request.GET.get('category')
@@ -26,6 +41,7 @@ def home(request):
 
     return render(request, 'home.html', {
         'cars': cars,
+        'fleet_gallery': FLEET_GALLERY,
     })
 
 def about(request):
